@@ -1,0 +1,421 @@
+import { LocalStorage } from "@raycast/api";
+import {
+  currentGoogleConnectionFingerprint,
+  listCalendars,
+} from "./google";
+import { GoogleCalendarEntry } from "./types";
+
+export type CalendarRole = "personal" | "work" | "shared" | "family";
+export type CalendarRoleMap = Partial<Record<CalendarRole, string>>;
+export type RoutingKeywordMap = Partial<Record<CalendarRole, string[]>>;
+export type CalendarSelectionMode = "custom" | "google" | "all";
+
+const STORAGE = {
+  accountScopeIndex: "calendar-shortcuts.account-scope-index.v1",
+
+  // Account-scoped v2 storage. These base keys are combined with a stable
+  // account scope derived from the connected account's primary calendar.
+  scheduleEnabledCalendarIds:
+    "calendar-shortcuts.schedule-enabled-calendar-ids.v2",
+  menuBarEnabledCalendarIds:
+    "calendar-shortcuts.menu-bar-enabled-calendar-ids.v2",
+  calendarRoles: "calendar-shortcuts.calendar-roles.v2",
+  routingKeywords: "calendar-shortcuts.routing-keywords.v2",
+  setupComplete: "calendar-shortcuts.setup-complete.v2",
+
+  // Old unscoped keys are deliberately not used as fallbacks. Once more than
+  // one Google account has been connected, there is no safe way to know which
+  // account those values belonged to. They are removed by the dev reset.
+  legacyEnabledCalendarIds: "calendar-shortcuts.enabled-calendar-ids.v1",
+  legacyScheduleEnabledCalendarIds:
+    "calendar-shortcuts.schedule-enabled-calendar-ids.v1",
+  legacyMenuBarEnabledCalendarIds:
+    "calendar-shortcuts.menu-bar-enabled-calendar-ids.v1",
+  legacyCalendarRoles: "calendar-shortcuts.calendar-roles.v1",
+  legacyRoutingKeywords: "calendar-shortcuts.routing-keywords.v1",
+  legacySetupComplete: "calendar-shortcuts.setup-complete.v1",
+} as const;
+
+const ROLES: CalendarRole[] = ["personal", "work", "shared", "family"];
+
+type AccountScopeIndex = Record<string, string>;
+
+let accountScopeCache:
+  | {
+      connectionFingerprint: string;
+      promise: Promise<string>;
+    }
+  | null = null;
+
+function stableHash(value: string): string {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return (hash >>> 0).toString(36);
+}
+
+async function readJson<T>(key: string, fallback: T): Promise<T> {
+  const raw = await LocalStorage.getItem<string>(key);
+  if (!raw) return fallback;
+  try {
+    return JSON.parse(raw) as T;
+  } catch {
+    return fallback;
+  }
+}
+
+async function writeJson(key: string, value: unknown): Promise<void> {
+  await LocalStorage.setItem(key, JSON.stringify(value));
+}
+
+async function readCalendarIds(key: string): Promise<string[] | null> {
+  const raw = await LocalStorage.getItem<string>(key);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed)
+      ? parsed.filter((value): value is string => typeof value === "string")
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveConnectedAccountScope(): Promise<string> {
+  const connectionFingerprint = currentGoogleConnectionFingerprint();
+
+  if (
+    accountScopeCache &&
+    accountScopeCache.connectionFingerprint === connectionFingerprint
+  ) {
+    return accountScopeCache.promise;
+  }
+
+  const promise = (async () => {
+    const index = await readJson<AccountScopeIndex>(
+      STORAGE.accountScopeIndex,
+      {},
+    );
+    const knownScope = index[connectionFingerprint];
+    if (knownScope) return knownScope;
+
+    const calendars = await listCalendars();
+    const primary = calendars.find((calendar) => calendar.primary);
+
+    if (!primary?.id) {
+      throw new Error(
+        "Could not identify the connected Google Calendar account.",
+      );
+    }
+
+    // Do not put an email/calendar id directly into Raycast LocalStorage keys.
+    // The primary calendar id is stable for the account, so a deterministic
+    // local hash gives us a durable but non-readable scope.
+    const scope = stableHash(primary.id.trim().toLowerCase());
+
+    const updated: AccountScopeIndex = {
+      ...index,
+      [connectionFingerprint]: scope,
+    };
+
+    // A user is unlikely to connect many accounts, but keep this housekeeping
+    // bounded so repeated developer OAuth tests cannot grow LocalStorage forever.
+    const recentEntries = Object.entries(updated).slice(-12);
+    await writeJson(STORAGE.accountScopeIndex, Object.fromEntries(recentEntries));
+
+    return scope;
+  })();
+
+  accountScopeCache = { connectionFingerprint, promise };
+
+  try {
+    return await promise;
+  } catch (error) {
+    if (
+      accountScopeCache?.connectionFingerprint === connectionFingerprint &&
+      accountScopeCache.promise === promise
+    ) {
+      accountScopeCache = null;
+    }
+    throw error;
+  }
+}
+
+async function scopedStorageKey(baseKey: string): Promise<string> {
+  return `${baseKey}.account.${await resolveConnectedAccountScope()}`;
+}
+
+function looksLikeEmailAddress(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+export function calendarEntryDisplayName(
+  calendar: GoogleCalendarEntry,
+): string {
+  const override = calendar.summaryOverride?.trim();
+  if (override) return override;
+
+  const summary = calendar.summary.trim();
+
+  // The primary calendar's stable Google ID is commonly the account email,
+  // and some accounts expose that same email as the CalendarList summary.
+  // Keep that ID internally, but don't make users treat an email address as a
+  // calendar name. If Google provides no friendlier override, use a neutral
+  // label rather than guessing another calendar or using account profile data.
+  if (calendar.primary && looksLikeEmailAddress(summary)) {
+    return "Primary Calendar";
+  }
+
+  return summary;
+}
+
+export function isGoogleVisible(calendar: GoogleCalendarEntry): boolean {
+  if (calendar.accessRole === "none") return false;
+  if (calendar.hidden) return false;
+  return calendar.primary || calendar.selected !== false;
+}
+
+export function googleVisibleCalendarIds(
+  calendars: GoogleCalendarEntry[],
+): string[] {
+  return calendars.filter(isGoogleVisible).map((calendar) => calendar.id);
+}
+
+export function allReadableCalendarIds(
+  calendars: GoogleCalendarEntry[],
+): string[] {
+  return calendars
+    .filter((calendar) => calendar.accessRole !== "none")
+    .map((calendar) => calendar.id);
+}
+
+export async function getScheduleEnabledCalendarIds(): Promise<
+  string[] | null
+> {
+  return readCalendarIds(
+    await scopedStorageKey(STORAGE.scheduleEnabledCalendarIds),
+  );
+}
+
+export async function setScheduleEnabledCalendarIds(
+  ids: string[],
+): Promise<void> {
+  const unique = Array.from(new Set(ids));
+  await writeJson(
+    await scopedStorageKey(STORAGE.scheduleEnabledCalendarIds),
+    unique,
+  );
+}
+
+export async function getMenuBarEnabledCalendarIds(): Promise<string[] | null> {
+  return readCalendarIds(
+    await scopedStorageKey(STORAGE.menuBarEnabledCalendarIds),
+  );
+}
+
+export async function setMenuBarEnabledCalendarIds(
+  ids: string[],
+): Promise<void> {
+  const unique = Array.from(new Set(ids));
+  await writeJson(
+    await scopedStorageKey(STORAGE.menuBarEnabledCalendarIds),
+    unique,
+  );
+}
+
+// Backwards-compatible aliases for any older code or development builds that
+// still import the original shared selection helpers. They now refer to the
+// full Schedule selection, which was the original command's primary purpose.
+export async function getEnabledCalendarIds(): Promise<string[] | null> {
+  return getScheduleEnabledCalendarIds();
+}
+
+export async function setEnabledCalendarIds(ids: string[]): Promise<void> {
+  await setScheduleEnabledCalendarIds(ids);
+}
+
+export async function getCalendarRoles(): Promise<CalendarRoleMap> {
+  return readJson<CalendarRoleMap>(
+    await scopedStorageKey(STORAGE.calendarRoles),
+    {},
+  );
+}
+
+export async function setCalendarRoles(roles: CalendarRoleMap): Promise<void> {
+  const cleaned: CalendarRoleMap = {};
+  for (const role of ROLES) {
+    const value = roles[role];
+    if (typeof value === "string" && value.trim()) cleaned[role] = value;
+  }
+  await writeJson(await scopedStorageKey(STORAGE.calendarRoles), cleaned);
+}
+
+export async function getRoutingKeywords(): Promise<RoutingKeywordMap> {
+  return readJson<RoutingKeywordMap>(
+    await scopedStorageKey(STORAGE.routingKeywords),
+    {},
+  );
+}
+
+export async function setRoutingKeywords(
+  keywords: RoutingKeywordMap,
+): Promise<void> {
+  const cleaned: RoutingKeywordMap = {};
+  for (const role of ROLES) {
+    const values = keywords[role];
+    if (!values) continue;
+    const unique = Array.from(
+      new Set(
+        values
+          .map((value) => value.trim())
+          .filter(Boolean)
+          .map((value) => value.toLowerCase()),
+      ),
+    );
+    if (unique.length) cleaned[role] = unique;
+  }
+  await writeJson(await scopedStorageKey(STORAGE.routingKeywords), cleaned);
+}
+
+export async function isCalendarSetupComplete(): Promise<boolean> {
+  return (
+    (await LocalStorage.getItem<string>(
+      await scopedStorageKey(STORAGE.setupComplete),
+    )) === "true"
+  );
+}
+
+export async function markCalendarSetupComplete(): Promise<void> {
+  await LocalStorage.setItem(
+    await scopedStorageKey(STORAGE.setupComplete),
+    "true",
+  );
+}
+
+export async function resetCalendarSetup(): Promise<void> {
+  const currentKeys = await Promise.all([
+    scopedStorageKey(STORAGE.scheduleEnabledCalendarIds),
+    scopedStorageKey(STORAGE.menuBarEnabledCalendarIds),
+    scopedStorageKey(STORAGE.calendarRoles),
+    scopedStorageKey(STORAGE.routingKeywords),
+    scopedStorageKey(STORAGE.setupComplete),
+  ]);
+
+  await Promise.all([
+    ...currentKeys.map((key) => LocalStorage.removeItem(key)),
+    LocalStorage.removeItem(STORAGE.legacyEnabledCalendarIds),
+    LocalStorage.removeItem(STORAGE.legacyScheduleEnabledCalendarIds),
+    LocalStorage.removeItem(STORAGE.legacyMenuBarEnabledCalendarIds),
+    LocalStorage.removeItem(STORAGE.legacyCalendarRoles),
+    LocalStorage.removeItem(STORAGE.legacyRoutingKeywords),
+    LocalStorage.removeItem(STORAGE.legacySetupComplete),
+  ]);
+}
+
+export function parseKeywordList(value: string): string[] {
+  return String(value || "")
+    .split(/[,\n]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+export function formatKeywordList(values: string[] | undefined): string {
+  return (values || []).join(", ");
+}
+
+function findWritableByName(
+  calendars: GoogleCalendarEntry[],
+  names: string[],
+): GoogleCalendarEntry | undefined {
+  const writable = calendars.filter(
+    (calendar) =>
+      calendar.accessRole === "owner" || calendar.accessRole === "writer",
+  );
+  for (const name of names) {
+    const lower = name.toLowerCase();
+    const exact = writable.find(
+      (calendar) => calendarEntryDisplayName(calendar).toLowerCase() === lower,
+    );
+    if (exact) return exact;
+  }
+  return undefined;
+}
+
+export function defaultRoleSelections(
+  calendars: GoogleCalendarEntry[],
+): CalendarRoleMap {
+  const writable = calendars.filter(
+    (calendar) =>
+      calendar.accessRole === "owner" || calendar.accessRole === "writer",
+  );
+  const personal =
+    findWritableByName(calendars, ["Personal", "Home"]) ||
+    writable.find((calendar) => calendar.primary) ||
+    writable[0];
+  const work = findWritableByName(calendars, ["Work", "Office"]);
+  const shared =
+    findWritableByName(calendars, ["Shared", "Couple", "Partner"]) ||
+    writable.find((calendar) =>
+      /\b(shared|partner|couple)\b/i.test(calendarEntryDisplayName(calendar)),
+    ) ||
+    writable.find((calendar) =>
+      calendarEntryDisplayName(calendar).includes("&"),
+    );
+  const family = findWritableByName(calendars, ["Family"]);
+
+  return {
+    ...(personal ? { personal: personal.id } : {}),
+    ...(work ? { work: work.id } : {}),
+    ...(shared ? { shared: shared.id } : {}),
+    ...(family ? { family: family.id } : {}),
+  };
+}
+
+export function resolveRoleCalendar(
+  calendars: GoogleCalendarEntry[],
+  roles: CalendarRoleMap,
+  role: CalendarRole,
+  fallbackName?: string,
+): GoogleCalendarEntry | undefined {
+  const configuredId = roles[role];
+  if (configuredId) {
+    const configured = calendars.find(
+      (calendar) => calendar.id === configuredId,
+    );
+    if (configured) return configured;
+  }
+
+  if (fallbackName) {
+    const exact = calendars.filter(
+      (calendar) =>
+        calendar.summary === fallbackName ||
+        calendar.summaryOverride === fallbackName,
+    );
+    if (exact.length === 1) return exact[0];
+  }
+
+  if (role === "personal") {
+    return calendars.find(
+      (calendar) =>
+        calendar.primary &&
+        (calendar.accessRole === "owner" || calendar.accessRole === "writer"),
+    );
+  }
+
+  return undefined;
+}
+
+export function roleLabel(role: CalendarRole): string {
+  switch (role) {
+    case "personal":
+      return "Personal";
+    case "work":
+      return "Work";
+    case "shared":
+      return "Shared";
+    case "family":
+      return "Family";
+  }
+}

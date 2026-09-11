@@ -1,0 +1,42 @@
+name: Beta bug report
+description: Report a problem found while testing CalFlow
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing CalFlow. Please remove private calendar details before posting screenshots.
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What did you expect CalFlow to do?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: What happened instead?
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: CalFlow command
+      placeholder: Schedule, Calendar Menu Bar, Add Personal Event…
+  - type: dropdown
+    id: event_type
+    attributes:
+      label: Event type
+      options:
+        - Timed event
+        - All-day event
+        - Not event-specific
+        - Unsure
+  - type: textarea
+    id: notes
+    attributes:
+      label: Extra context
+      description: Include screenshots or recordings if useful. Do not include OAuth tokens, client-secret files, or private credentials.
