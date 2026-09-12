@@ -1,6 +1,6 @@
 import { CalendarSelectionMode, isGoogleVisible } from "./calendar-settings";
 import { listCalendars, listEvents } from "./google";
-import { GoogleCalendarEntry, ScheduleEvent } from "./types";
+import { GoogleCalendarEntry, GoogleEvent, ScheduleEvent } from "./types";
 
 export type ScheduleOptions = {
   daysAhead: number;
@@ -9,12 +9,81 @@ export type ScheduleOptions = {
   enabledCalendarIds?: string[] | null;
 };
 
+function connectedGoogleAccountId(
+  calendars: GoogleCalendarEntry[],
+): string | undefined {
+  return calendars.find((calendar) => calendar.primary)?.id?.trim() || undefined;
+}
+
+function withGoogleAuthUser(rawUrl: string, authUser: string | undefined): string {
+  if (!authUser) return rawUrl;
+
+  try {
+    const url = new URL(rawUrl);
+    const googleCalendarUrl =
+      (url.hostname === "calendar.google.com" || url.hostname === "www.google.com") &&
+      url.pathname.startsWith("/calendar/");
+
+    if (!googleCalendarUrl) return rawUrl;
+
+    // Never pin a browser-account slot such as /u/0/. Browser slot ordering is
+    // unrelated to the Google account CalFlow authenticated with in Raycast.
+    url.pathname = url.pathname.replace(
+      /^\/calendar\/u\/\d+(?=\/|$)/,
+      "/calendar",
+    );
+    url.searchParams.set("authuser", authUser);
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+export function accountAwareGoogleCalendarUrl(
+  event: GoogleEvent,
+  authUser: string | undefined,
+): string {
+  const eventLink = event.htmlLink?.trim();
+  if (eventLink) return withGoogleAuthUser(eventLink, authUser);
+
+  const start = event.start.dateTime
+    ? new Date(event.start.dateTime)
+    : event.start.date
+      ? new Date(`${event.start.date}T00:00:00`)
+      : null;
+
+  if (!start) {
+    return withGoogleAuthUser(
+      "https://calendar.google.com/calendar/r",
+      authUser,
+    );
+  }
+
+  const year = start.getFullYear();
+  const month = String(start.getMonth() + 1).padStart(2, "0");
+  const day = String(start.getDate()).padStart(2, "0");
+
+  return withGoogleAuthUser(
+    `https://calendar.google.com/calendar/r/day/${year}/${month}/${day}`,
+    authUser,
+  );
+}
+
+function withAccountAwareGoogleCalendarLink(
+  event: GoogleEvent,
+  authUser: string | undefined,
+): GoogleEvent {
+  const htmlLink = accountAwareGoogleCalendarUrl(event, authUser);
+  return htmlLink === event.htmlLink ? event : { ...event, htmlLink };
+}
+
 export async function loadSchedule(options: ScheduleOptions): Promise<{
   calendars: GoogleCalendarEntry[];
   events: ScheduleEvent[];
   birthdays: ScheduleEvent[];
 }> {
   const calendars = await listCalendars();
+  const authUser = connectedGoogleAccountId(calendars);
   const customIds = options.enabledCalendarIds
     ? new Set(options.enabledCalendarIds)
     : null;
@@ -47,7 +116,10 @@ export async function loadSchedule(options: ScheduleOptions): Promise<{
       // below and are only shown when the dedicated Birthdays filter is used.
       return events
         .filter((event) => event.eventType !== "birthday")
-        .map<ScheduleEvent>((event) => ({ calendar, event }));
+        .map<ScheduleEvent>((event) => ({
+          calendar,
+          event: withAccountAwareGoogleCalendarLink(event, authUser),
+        }));
     }),
   );
 
@@ -85,7 +157,7 @@ export async function loadSchedule(options: ScheduleOptions): Promise<{
         .filter((event) => event.eventType === "birthday")
         .map<ScheduleEvent>((event) => ({
           calendar,
-          event,
+          event: withAccountAwareGoogleCalendarLink(event, authUser),
           syntheticCalendarName: "Birthdays",
           syntheticColor: "#8FB7F7",
         }));
@@ -149,7 +221,10 @@ export function calendarDisplayColor(item: ScheduleEvent): string | undefined {
 }
 
 export type CompactSectionKey =
-  "this-week" | "next-week" | `rest:${string}` | `month:${string}`;
+  | "this-week"
+  | "next-week"
+  | `rest:${string}`
+  | `month:${string}`;
 
 function localEventDate(item: ScheduleEvent): Date {
   const raw =
