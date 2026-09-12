@@ -74,6 +74,21 @@ check(
   "All-day Smart Status behaviour remains unchanged.",
 );
 
+check(
+  "Multi-day all-day events count as active today",
+  source.includes("function allDaySpansLocalDay(") &&
+    source.includes("eventStartMillis(item) < nextDay.getTime()") &&
+    source.includes("eventEndMillis(item) > dayStart.getTime()"),
+  "Google's exclusive all-day end date is respected when deciding whether an event spans today.",
+);
+
+check(
+  "Multi-day all-day date labels hide the original start date while active",
+  source.includes("sameLocalDay(start, now) || allDaySpansLocalDay(item, now)") &&
+    source.includes("return allDaySpansLocalDay(item, now)"),
+  "An all-day event that began yesterday is presented as active today instead of being labelled with yesterday's date.",
+);
+
 console.log("\nCalFlow Smart Status contract\n");
 
 let failed = 0;

@@ -127,6 +127,22 @@ function sameLocalDay(a: Date, b: Date): boolean {
   );
 }
 
+function allDaySpansLocalDay(item: ScheduleEvent, day: Date): boolean {
+  if (!isAllDay(item)) return false;
+
+  const dayStart = new Date(day);
+  dayStart.setHours(0, 0, 0, 0);
+
+  const nextDay = new Date(dayStart);
+  nextDay.setDate(nextDay.getDate() + 1);
+
+  // Google all-day end dates are exclusive.
+  return (
+    eventStartMillis(item) < nextDay.getTime() &&
+    eventEndMillis(item) > dayStart.getTime()
+  );
+}
+
 function clockLabel(date: Date): string {
   return new Intl.DateTimeFormat("en-GB", {
     hour: "numeric",
@@ -174,7 +190,7 @@ function smartHeadlineTitle(
 
   if (isAllDay(item)) {
     const start = new Date(eventStartMillis(item));
-    return sameLocalDay(start, now)
+    return allDaySpansLocalDay(item, now)
       ? `${truncate(eventTitle(item))} · All day`
       : `${truncate(eventTitle(item))} · ${compactDateLabel(start, dateStyle)} · All day`;
   }
@@ -249,7 +265,7 @@ function menuRowDate(
   dateStyle: MenuBarDateStyle,
 ): string | undefined {
   const start = new Date(eventStartMillis(item));
-  return sameLocalDay(start, now)
+  return sameLocalDay(start, now) || allDaySpansLocalDay(item, now)
     ? undefined
     : compactDateLabel(start, dateStyle);
 }
@@ -260,7 +276,9 @@ function shorterMenuRowDate(
   dateStyle: MenuBarDateStyle,
 ): string | undefined {
   const start = new Date(eventStartMillis(item));
-  if (sameLocalDay(start, now)) return undefined;
+  if (sameLocalDay(start, now) || allDaySpansLocalDay(item, now)) {
+    return undefined;
+  }
 
   const month = THREE_LETTER_MONTHS[start.getMonth()];
   const day = start.getDate();
@@ -399,6 +417,7 @@ function headlineForMode(
     // dropdown without turning the headline into "Nothing else shown today".
     const todayHeadline = candidates.find((item) => {
       if (!isUpcomingEvent(item, nowMs)) return false;
+      if (allDaySpansLocalDay(item, now)) return true;
       const start = new Date(eventStartMillis(item));
       return sameLocalDay(start, now);
     });
