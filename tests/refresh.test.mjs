@@ -18,6 +18,7 @@ function count(text, needle) {
 }
 
 const schedule = source("src/schedule.tsx");
+const scheduleLib = source("src/lib/schedule.ts");
 const eventActions = source("src/event-actions.tsx");
 const quickAdd = source("src/lib/quick-add.ts");
 const enabledCalendars = source("src/enabled-calendars.tsx");
@@ -141,6 +142,20 @@ const checks = [
     label: "Worker Unloaded ordering preserved",
     pass: persistIndex >= 0 && stateIndex > persistIndex,
     detail: "Meetings-only setting persists before React state changes.",
+  },
+  {
+    label: "Google Calendar links follow the connected account",
+    pass:
+      scheduleLib.includes("const authUser = connectedGoogleAccountId(calendars)") &&
+      scheduleLib.includes('url.searchParams.set("authuser", authUser)') &&
+      scheduleLib.includes("/^\\/calendar\\/u\\/\\d+(?=\\/|$)/"),
+    detail: "Event links use the Raycast-authenticated Google account instead of a browser /u/0 slot.",
+  },
+  {
+    label: "Loaded events always receive an account-aware link",
+    pass:
+      count(scheduleLib, "withAccountAwareGoogleCalendarLink(event, authUser)") >= 2,
+    detail: "Normal events and birthdays both carry account-aware Google Calendar URLs into Schedule and Menu Bar.",
   },
 ];
 
