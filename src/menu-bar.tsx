@@ -203,7 +203,7 @@ function smartHeadlineTitle(
     const minutesUntil = minutesBetween(startMs, nowMs);
 
     // Threshold modes already hide the menu-bar item until the event is close,
-    // so "Free until…" is most useful in Upcoming / Always modes.
+    // so a concise "Next event/meeting at…" status is most useful in Upcoming / Always modes.
     if ((mode === "upcoming" || mode === "always") && minutesUntil > 60) {
       return onlyMeetings
         ? `Next meeting at ${clockLabel(start)}`
