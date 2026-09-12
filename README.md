@@ -8,6 +8,8 @@
 
 > **Beta:** CalFlow is under active testing and is not yet published in the Raycast Store.
 
+**Privacy & security:** [Privacy Policy](PRIVACY.md) · [Security Policy](SECURITY.md)
+
 ## Highlights
 
 - **Schedule** — browse upcoming Google Calendar events without Apple Calendar.
@@ -105,6 +107,8 @@ Owned events can expose actions such as Edit, Move, and Delete. Guest/invited ev
 
 ## Privacy and authentication
 
+See the full [Privacy Policy](PRIVACY.md) and [Security Policy](SECURITY.md).
+
 CalFlow uses Raycast's native Google OAuth support and requests:
 
 - `calendar.events` — read and manage calendar events;
@@ -112,7 +116,9 @@ CalFlow uses Raycast's native Google OAuth support and requests:
 
 OAuth tokens are managed by Raycast. The repository contains the OAuth **client ID**, which is public by design, but contains no client secret, refresh token, or access token.
 
-CalFlow stores extension preferences and account-scoped calendar configuration locally through Raycast. Advertisers or third parties are not part of the extension's calendar data path.
+CalFlow stores extension preferences and account-scoped calendar configuration locally through Raycast. The persistent Menu Bar also uses a local Raycast cache of upcoming event data so it can render quickly without contacting Google on every click. CalFlow does not operate a backend server that receives this calendar data.
+
+CalFlow does not use calendar data for advertising, tracking, analytics, data brokerage, or training generalized AI/ML models.
 
 ## Known beta limitations
 
