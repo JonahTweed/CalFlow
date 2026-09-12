@@ -28,17 +28,19 @@ check(
 );
 
 check(
-  "Long-gap wording describes the filtered view",
-  source.includes('`Nothing shown until ${clockLabel(start)}`'),
-  'Long gaps say "Nothing shown until …" instead of making an absolute calendar claim.',
+  "Long-gap wording identifies the next visible item",
+  source.includes('`Next meeting at ${clockLabel(start)}`') &&
+    source.includes('`Next event at ${clockLabel(start)}`'),
+  'Long gaps say "Next meeting at …" or "Next event at …".',
 );
 
 check(
-  "Long-gap wording is mode-neutral",
-  !source.includes('`No meetings until ${clockLabel(start)}`') &&
+  "Long-gap wording respects the meeting filter",
+  !source.includes('`Nothing shown until ${clockLabel(start)}`') &&
+    !source.includes('`No meetings until ${clockLabel(start)}`') &&
     !source.includes('`No events until ${clockLabel(start)}`') &&
     !source.includes('`Free until ${clockLabel(start)}`'),
-  "Meetings Only and Show All Events use the same truthful long-gap wording.",
+  "Smart Status no longer uses the older ambiguous long-gap wording.",
 );
 
 check(

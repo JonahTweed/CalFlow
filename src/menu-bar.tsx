@@ -206,8 +206,8 @@ function smartHeadlineTitle(
     // so "Free until…" is most useful in Upcoming / Always modes.
     if ((mode === "upcoming" || mode === "always") && minutesUntil > 60) {
       return onlyMeetings
-        ? `Nothing shown until ${clockLabel(start)}`
-        : `Nothing shown until ${clockLabel(start)}`;
+        ? `Next meeting at ${clockLabel(start)}`
+        : `Next event at ${clockLabel(start)}`;
     }
 
     return `${truncate(eventTitle(item))} · in ${compactDuration(minutesUntil)}`;
