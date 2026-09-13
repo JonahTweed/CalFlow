@@ -27,3 +27,4 @@ rollback/
 # Local captures
 *.mov
 *.mp4
+CALFLOW_HANDOFF_*.md
