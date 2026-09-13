@@ -5,12 +5,14 @@ import { fileURLToPath } from "node:url";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
 const setupPath = path.join(root, "src", "lib", "calendar-setup-view.tsx");
+const settingsPath = path.join(root, "src", "lib", "calendar-settings.ts");
 const commandPath = path.join(root, "src", "set-up-calendars.tsx");
 const packagePath = path.join(root, "package.json");
 const schedulePath = path.join(root, "src", "schedule.tsx");
 const replayPath = path.join(root, "src", "reset-onboarding.ts");
 
 const setup = fs.readFileSync(setupPath, "utf8");
+const settings = fs.readFileSync(settingsPath, "utf8");
 const command = fs.readFileSync(commandPath, "utf8");
 const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 const schedule = fs.readFileSync(schedulePath, "utf8");
@@ -27,6 +29,17 @@ check(
     setup.includes('Set Up Your Calendars · 2 of 3') &&
     setup.includes('Set Up Your Calendars · 3 of 3'),
   "Roles, visibility and optional routing are separated into focused steps.",
+);
+
+check(
+  "Persistent setup draft spans all three steps",
+  setup.includes("type SetupDraft = {") &&
+    setup.includes("const [draft, setDraft] = useState<SetupDraft>") &&
+    setup.includes("roles: CalendarRoleMap") &&
+    setup.includes("scheduleCalendars: string[]") &&
+    setup.includes("menuBarCalendars: string[]") &&
+    setup.includes("keywordText: KeywordValues"),
+  "Roles, visibility choices and routing text share one persistent draft instead of independent transient form state.",
 );
 
 check(
@@ -47,17 +60,80 @@ check(
   "Schedule and Menu Bar are independently selectable",
   setup.includes('id="scheduleCalendars"') &&
     setup.includes('id="menuBarCalendars"') &&
-    setup.includes("setScheduleEnabledCalendarIds(scheduleCalendars)") &&
-    setup.includes("setMenuBarEnabledCalendarIds(menuBarCalendars)"),
+    setup.includes("setScheduleEnabledCalendarIds(finalDraft.scheduleCalendars)") &&
+    setup.includes("setMenuBarEnabledCalendarIds(finalDraft.menuBarCalendars)"),
   "The onboarding flow saves separate account-scoped calendar lists.",
 );
 
 check(
+  "Missing native selection submissions cannot silently clear calendars",
+  setup.includes("validatedCalendarIds(") &&
+    setup.includes("calendar selection was not submitted correctly") &&
+    settings.includes("if (!Array.isArray(ids))") &&
+    settings.includes("calendar selection was missing"),
+  "A missing/undefined Raycast form field is rejected instead of being normalised to an empty array.",
+);
+
+check(
+  "Intentional clear-all remains valid",
+  settings.includes("return Array.from(") &&
+    settings.includes("new Set(ids.map((value) => value.trim()).filter(Boolean))"),
+  "A deliberate [] remains a valid calendar selection while non-array input is rejected.",
+);
+
+check(
+  "Missing keyword submissions cannot silently clear routing",
+  setup.includes("validatedKeywordValues(") &&
+    settings.includes('typeof value !== "string"') &&
+    settings.includes("Routing keyword field was missing"),
+  "Missing keyword fields fail the save instead of being converted into an empty list.",
+);
+
+check(
+  "Routing keyword draft is controlled and persists across Back/Continue",
+  setup.includes("value={draft.keywordText.sharedKeywords}") &&
+    setup.includes("sharedKeywords: value") &&
+    setup.includes("keywordTextFromMap(savedKeywords)"),
+  "A value such as ‘lauren’ remains in the shared draft while moving between setup steps and after reopening.",
+);
+
+check(
+  "Setup save is verified before completion",
+  setup.includes("const [savedRoles, savedKeywords, savedSchedule, savedMenuBar]") &&
+    setup.includes("sameStringArrays(savedSchedule, finalDraft.scheduleCalendars)") &&
+    setup.includes("sameStringArrays(savedMenuBar, finalDraft.menuBarCalendars)") &&
+    setup.includes("sameKeywordMap(savedKeywords, keywordMap)") &&
+    setup.indexOf("await markCalendarSetupComplete()") >
+      setup.indexOf("save read-back"),
+  "Finish Setup reads the account-scoped payload back and only marks setup complete after verification succeeds.",
+);
+
+check(
+  "Development diagnostics exclude credentials and calendar contents",
+  setup.includes("environment.isDevelopment") &&
+    setup.includes("getCalendarSettingsDebugScope") &&
+    setup.includes('debugSetup("save payload"') &&
+    setup.includes('debugSetup("save read-back"') &&
+    !setup.includes("accessToken") &&
+    !setup.includes("refreshToken"),
+  "Development logs expose draft shape, account scope and write/read-back metadata without OAuth credentials or event contents.",
+);
+
+check(
   "Role and routing storage remain account scoped",
-  setup.includes("setCalendarRoles(roles)") &&
+  setup.includes("setCalendarRoles(finalDraft.roles)") &&
     setup.includes("setRoutingKeywords(keywordMap)") &&
     setup.includes("markCalendarSetupComplete()"),
   "Setup continues through the existing account-scoped storage helpers.",
+);
+
+check(
+  "Same-account reconnect keeps the same scoped storage path",
+  settings.includes("currentGoogleConnectionFingerprint()") &&
+    settings.includes("calendar.primary") &&
+    settings.includes("stableHash(primary.id.trim().toLowerCase())") &&
+    !settings.includes("removeItem(STORAGE.accountScopeIndex)"),
+  "Reconnect continues to resolve the durable primary-calendar-derived account scope rather than clearing saved setup.",
 );
 
 check(
@@ -89,7 +165,6 @@ check(
   "The onboarding calendar pickers are active by default for new installs without overwriting existing preferences.",
 );
 
-
 check(
   "Schedule routes incomplete accounts to dedicated setup",
   schedule.includes('name: "set-up-calendars"') &&
@@ -111,6 +186,7 @@ check(
     schedule.includes('name: "check-connection"'),
   "Schedule errors point to the Native OAuth connection diagnostic rather than the removed manual credential flow.",
 );
+
 check(
   "Dedicated setup command has useful next actions",
   command.includes('title="Open Schedule"') &&
@@ -118,7 +194,6 @@ check(
     command.includes('title="Enabled Calendars"'),
   "Finishing the dedicated setup command leads directly to the main product surfaces.",
 );
-
 
 check(
   "Development setup replay preserves saved choices",
