@@ -45,11 +45,13 @@ npm run dev
 
 Raycast will load the local extension.
 
-Open **Schedule**. On first use:
+Open **Schedule** or explicitly launch **Calendar Menu Bar**. On first use:
 
 1. sign in to Google through Raycast;
-2. complete the three-step calendar setup;
-3. choose which calendars appear in Schedule and the Menu Bar.
+2. CalFlow opens **Set Up Calendars** for the connected account if setup is incomplete;
+3. complete the three-step setup, including choosing independent calendar sets for Schedule and the Menu Bar.
+
+Automatic/background Menu Bar launches stay quiet when setup is incomplete. The dropdown keeps a **Set Up Calendars** action so you can finish when ready; background refreshes do not open the setup wizard.
 
 If Google sign-in is blocked during the beta, please report it through GitHub Issues. OAuth tester access may be limited while the public OAuth configuration is being finalised.
 
@@ -110,6 +112,8 @@ CalFlow deliberately treats owned events and invitations differently.
 
 Owned events can expose actions such as Edit, Move, and Delete. Guest/invited events use safer actions such as Copy to Calendar and do not receive destructive owner-style actions where Google does not indicate ownership.
 
+In the Menu Bar event submenu, ordinary writable one-off events keep **Move to Calendar…** where supported. Ordinary writable recurring events offer **Copy to Calendar…** in that slot instead. Existing **Join Meeting** and **Open Location** shortcuts take precedence when present. When Copy is promoted, it is omitted from that submenu’s **More Actions…** view; other entry points retain it. Read-only, guest, and special events expose only their supported actions.
+
 ## Privacy and authentication
 
 See the full [Privacy Policy](PRIVACY.md) and [Security Policy](SECURITY.md).
@@ -129,6 +133,7 @@ CalFlow does not use calendar data for advertising, tracking, analytics, data br
 
 - Raycast's native DatePicker free-text suggestion parser can reject or inconsistently interpret some abbreviated phrases. CalFlow validates Start/End relationships and preserves event duration when Start moves past End, but does not replace Raycast's DatePicker parser.
 - Timed events and all-day events can both be edited in Raycast, but CalFlow intentionally does **not** convert timed events into all-day events or vice versa yet.
+- Moving recurring events is not supported; use **Copy to Calendar…** where offered.
 - The public Google OAuth configuration may still require additional verification before a completely open release.
 - CalFlow is currently macOS-only.
 
@@ -143,7 +148,9 @@ npm test
 npx tsc --noEmit
 ```
 
-The `npm test` suite covers parsing, calendar routing, refresh wiring, onboarding and setup persistence, Smart Status, menu-row compaction/truncation, and event-opening regressions. Event-opening coverage checks account-aware event and calendar-view URLs, default-browser routing, and account lookup failures.
+The `npm test` suite covers parsing, calendar routing, refresh wiring, onboarding and setup persistence, Smart Status, menu-row compaction/truncation, and event-opening regressions. Onboarding coverage distinguishes explicit and background Menu Bar launches, completed setup, stale snapshots, and failed redirects. Menu submenu coverage checks Move/Copy placement, recurring and restricted events, existing meeting/location shortcuts, and duplicate Copy suppression. Event-opening coverage checks account-aware event and calendar-view URLs, default-browser routing, and account lookup failures.
+
+These checks include source contracts and executed UI logic with mocked Raycast boundaries; they do not replace local Raycast runtime verification.
 
 A **Refresh Diagnostics — Development** command also performs a non-destructive live check of the real Raycast menu-bar refresh pipeline.
 
