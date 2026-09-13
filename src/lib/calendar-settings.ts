@@ -47,6 +47,11 @@ let accountScopeCache:
     }
   | null = null;
 
+// Raycast LocalStorage is shared by the extension. Keep JSON writes ordered so
+// multiple settings saved together cannot race and leave only part of a setup
+// transaction persisted.
+let localStorageWriteQueue: Promise<void> = Promise.resolve();
+
 function stableHash(value: string): string {
   let hash = 2166136261;
   for (let index = 0; index < value.length; index += 1) {
@@ -67,7 +72,15 @@ async function readJson<T>(key: string, fallback: T): Promise<T> {
 }
 
 async function writeJson(key: string, value: unknown): Promise<void> {
-  await LocalStorage.setItem(key, JSON.stringify(value));
+  const payload = JSON.stringify(value);
+  const write = localStorageWriteQueue.then(() =>
+    LocalStorage.setItem(key, payload),
+  );
+
+  // Keep later writes moving even if one write fails, while still propagating
+  // the original failure to the caller that initiated it.
+  localStorageWriteQueue = write.catch(() => {});
+  await write;
 }
 
 async function readCalendarIds(key: string): Promise<string[] | null> {
