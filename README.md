@@ -8,6 +8,8 @@
 
 > **Beta:** CalFlow is under active testing and is not yet published in the Raycast Store.
 
+**Official website:** [DayCal](https://daycal.co.uk/) is the new public website and product name. The repository and extension identifiers are unchanged. See [website maintenance and domain setup](WEBSITE.md).
+
 **Privacy & security:** [Privacy Policy](PRIVACY.md) · [Security Policy](SECURITY.md)
 
 ## Highlights

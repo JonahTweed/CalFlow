@@ -2,6 +2,7 @@
 
 ## 0.15.0 Public Beta Candidate — 2026-09-13
 
+- Added the DayCal static website, privacy and security pages in `docs/` for free GitHub Pages hosting at `daycal.co.uk`. Website branding introduces DayCal without renaming the repository or changing extension behaviour, OAuth or compatibility identifiers.
 - Explicit first-run Calendar Menu Bar launches now open Set Up Calendars for incomplete accounts. Background launches stay quiet and retain the setup action, without polling or repeated automatic redirect attempts. Schedule first-run routing is unchanged.
 - Promoted Copy to Calendar into the Menu Bar transfer slot for ordinary writable recurring events, preserving supported one-off Move actions and existing meeting/location shortcuts. More Actions omits Copy only when promoted; recurring-event Move support was not added.
 - Added regression coverage for Menu Bar setup launch modes, stale setup snapshots, redirect failures, event submenu permissions and Move/Copy placement. Both UX improvements were locally runtime-verified by the maintainer.
