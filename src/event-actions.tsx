@@ -35,6 +35,7 @@ export type EventActionsLaunchContext = {
   calendar?: GoogleCalendarEntry;
   event?: GoogleEvent;
   action?: "view" | "edit" | "copy" | "move" | "delete";
+  hideCopyToCalendar?: boolean;
 };
 
 type EventActionsLaunchProps = LaunchProps<{
@@ -45,6 +46,7 @@ type Props = {
   calendar: GoogleCalendarEntry;
   event: GoogleEvent;
   onChanged?: () => void | Promise<void>;
+  hideCopyToCalendar?: boolean;
 };
 
 function mapsUrl(location: string): string {
@@ -402,7 +404,12 @@ export function CalendarTransferView({
   );
 }
 
-export function EventActionsView({ calendar, event, onChanged }: Props) {
+export function EventActionsView({
+  calendar,
+  event,
+  onChanged,
+  hideCopyToCalendar = false,
+}: Props) {
   const [deleting, setDeleting] = useState(false);
 
   const scheduleItem: ScheduleEvent = { calendar, event };
@@ -479,7 +486,7 @@ export function EventActionsView({ calendar, event, onChanged }: Props) {
           />
         ) : null}
 
-        {transferMode ? (
+        {transferMode && !(hideCopyToCalendar && transferMode === "copy") ? (
           <List.Item
             title={
               transferMode === "move"
@@ -751,7 +758,13 @@ function Command(props: EventActionsLaunchProps) {
     return <DeleteEventView calendar={calendar} event={event} />;
   }
 
-  return <EventActionsView calendar={calendar} event={event} />;
+  return (
+    <EventActionsView
+      calendar={calendar}
+      event={event}
+      hideCopyToCalendar={props.launchContext?.hideCopyToCalendar}
+    />
+  );
 }
 
 function DeleteEventView({ calendar, event }: Props) {

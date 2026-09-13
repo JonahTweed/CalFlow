@@ -1,5 +1,6 @@
 import { withAccessToken } from "@raycast/utils";
 import { googleOAuth } from "./lib/google-oauth";
+import { transferModeFor } from "./event-actions";
 import {
   Cache,
   Color,
@@ -530,6 +531,7 @@ function isGmailGeneratedEvent(event: GoogleEvent): boolean {
 async function launchEventAction(
   item: ScheduleEvent,
   action: "view" | "edit" | "copy" | "move" | "delete",
+  hideCopyToCalendar = false,
 ): Promise<void> {
   try {
     await launchCommand({
@@ -539,6 +541,7 @@ async function launchEventAction(
         calendar: item.calendar,
         event: item.event,
         action,
+        hideCopyToCalendar,
       },
     });
   } catch (error) {
@@ -897,6 +900,23 @@ function Command(
           {menuEvents.slice(0, menuBarEventCount).length ? (
             menuEvents.slice(0, menuBarEventCount).map((item) => {
               const color = calendarDisplayColor(item) || Color.SecondaryText;
+              const ordinaryEvent =
+                !item.event.eventType || item.event.eventType === "default";
+              const recurringEvent = Boolean(
+                item.event.recurringEventId || item.event.recurrence?.length,
+              );
+              // Preserve meeting/location shortcuts. Only ordinary writable
+              // events get a transfer shortcut in the otherwise unused slot.
+              const transferSlotAvailable =
+                !conferenceUrl(item) &&
+                !item.event.location?.trim() &&
+                !isGmailGeneratedEvent(item.event) &&
+                canModifyEvent(item.calendar, item.event) &&
+                ordinaryEvent;
+              const promotedCopy = transferSlotAvailable && recurringEvent;
+              const showMove =
+                transferSlotAvailable && !recurringEvent &&
+                transferModeFor(item.calendar, item.event) === "move";
               return (
                 <MenuBarExtra.Submenu
                   key={`${item.calendar.id}:${item.event.id}`}
@@ -967,11 +987,7 @@ function Command(
                     />
                   ) : null}
 
-                  {!conferenceUrl(item) &&
-                  !item.event.location?.trim() &&
-                  !isGmailGeneratedEvent(item.event) &&
-                  canModifyEvent(item.calendar, item.event) &&
-                  !item.event.recurringEventId ? (
+                  {showMove ? (
                     <MenuBarExtra.Item
                       title="Move to Calendar…"
                       icon={{
@@ -979,6 +995,15 @@ function Command(
                         tintColor: Color.PrimaryText,
                       }}
                       onAction={() => launchEventAction(item, "move")}
+                    />
+                  ) : promotedCopy ? (
+                    <MenuBarExtra.Item
+                      title="Copy to Calendar…"
+                      icon={{
+                        source: Icon.CopyClipboard,
+                        tintColor: Color.PrimaryText,
+                      }}
+                      onAction={() => launchEventAction(item, "copy")}
                     />
                   ) : null}
 
@@ -988,7 +1013,7 @@ function Command(
                       source: Icon.Ellipsis,
                       tintColor: Color.PrimaryText,
                     }}
-                    onAction={() => launchEventAction(item, "view")}
+                    onAction={() => launchEventAction(item, "view", promotedCopy)}
                   />
 
                   <MenuBarExtra.Separator />
