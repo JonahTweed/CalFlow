@@ -89,7 +89,7 @@ check(
   "An all-day event that began yesterday is presented as active today instead of being labelled with yesterday's date.",
 );
 
-console.log("\nCalFlow Smart Status contract\n");
+console.log("\nDayCal Smart Status contract\n");
 
 let failed = 0;
 

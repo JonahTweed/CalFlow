@@ -61,7 +61,7 @@ function Command() {
     const markdown = [
       "# ✅ Google Calendar connected",
       "",
-      "CalFlow can access Google Calendar successfully through Raycast's native Google sign-in.",
+      "DayCal can access Google Calendar successfully through Raycast's native Google sign-in.",
       "",
       `**Primary calendar:** ${escapeMarkdown(state.primaryCalendar)}`,
       `**Calendars found:** ${state.calendarCount}`,
@@ -89,13 +89,13 @@ function Command() {
   const markdown = [
     "# ❌ Google Calendar connection problem",
     "",
-    "CalFlow is signed in, but Google Calendar could not be reached successfully.",
+    "DayCal is signed in, but Google Calendar could not be reached successfully.",
     "",
     "## Details",
     "",
     escapeMarkdown(state.message),
     "",
-    "Try **Check Again**. If the problem persists, use **Disconnect Google Calendar** and sign in again when you next open a CalFlow command.",
+    "Try **Check Again**. If the problem persists, use **Disconnect Google Calendar** and sign in again when you next open a DayCal command.",
   ].join("\n");
 
   return (

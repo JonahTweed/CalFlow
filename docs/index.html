@@ -76,58 +76,72 @@
           </p>
         </div>
         <figure class="product-preview">
-          <div class="preview-menubar">
-            <span>DayCal</span
-            ><span>Next meeting in 15m <span aria-hidden="true">▾</span></span>
+          <div
+            class="preview-menubar"
+            aria-label="Illustrative DayCal menu-bar status: Next event at 11:30am"
+          >
+            <svg
+              class="menubar-calendar"
+              viewBox="0 0 24 24"
+              width="18"
+              height="18"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              aria-hidden="true"
+            >
+              <rect x="3" y="5" width="18" height="16" rx="3" />
+              <path d="M7 3v4m10-4v4M3 10h18" />
+            </svg>
+            <span>Next event at 11:30am</span>
           </div>
-          <div class="schedule-window">
-            <div class="window-top">
-              <span class="window-dots" aria-hidden="true"
-                ><i></i><i></i><i></i></span
-              ><span>Schedule</span
-              ><span class="key" aria-hidden="true">⌘ K</span>
-            </div>
-            <div class="preview-search">
-              <span aria-hidden="true">⌕</span> Your day, in view
-            </div>
-            <div class="schedule-content">
-              <div class="section-label">
-                <span>NEXT UP</span><span>Work</span>
-              </div>
-              <div class="next-event">
-                <span class="event-mark blue" aria-hidden="true"></span>
-                <div>
-                  <strong>Design catch-up</strong
-                  ><span>10:00 – 10:30 · Google Meet</span>
-                </div>
-                <span class="time-pill">In 15m</span>
-              </div>
-              <div class="section-label today-label">
-                <span>TODAY</span><span>All calendars</span>
-              </div>
-              <div class="event-row">
-                <span class="event-mark violet" aria-hidden="true"></span>
-                <div><strong>Time to focus</strong><span>Work</span></div>
-                <time>11:00</time>
-              </div>
-              <div class="event-row">
-                <span class="event-mark orange" aria-hidden="true"></span>
-                <div>
-                  <strong>Lunch with a friend</strong><span>Personal</span>
-                </div>
-                <time>13:00</time>
-              </div>
-              <div class="event-row">
-                <span class="event-mark green" aria-hidden="true"></span>
-                <div><strong>Family dinner</strong><span>Shared</span></div>
-                <time>18:30</time>
-              </div>
-            </div>
-            <div class="window-bottom">
-              <span>Google Calendar</span><span>DayCal</span>
-            </div>
-          </div>
-          <figcaption>Illustrative schedule · example events</figcaption>
+          <a
+            class="schedule-screenshot-link"
+            href="./assets/daycal-schedule-demo.png"
+            aria-label="View full-size DayCal Schedule screenshot with demo events"
+          >
+            <img
+              class="schedule-screenshot"
+              src="./assets/daycal-schedule-demo.png"
+              alt="DayCal Schedule in Raycast with demo events: a morning summary, Next Up for Sunday Brunch at 11:30, This Week and Next Week sections, coloured calendar icons, recurring-event indicators, and the Open in Google Calendar action."
+              width="1512"
+              height="968"
+              fetchpriority="high"
+            />
+          </a>
+          <figcaption>
+            Actual Raycast Schedule · demo events<br />Menu-bar status
+            illustrated · select Schedule to enlarge
+          </figcaption>
+        </figure>
+      </section>
+      <section class="menubar-showcase" aria-labelledby="menubar-title">
+        <div>
+          <p class="eyebrow">ALWAYS WITHIN REACH</p>
+          <h2 id="menubar-title">Your calendar, without opening Raycast.</h2>
+          <p>
+            See upcoming events and open, edit or join a meeting straight from
+            your menu bar.
+          </p>
+        </div>
+        <figure>
+          <a
+            class="schedule-screenshot-link"
+            href="./assets/daycal-menubar-demo.png"
+            aria-label="View full-size Calendar Menu Bar screenshot"
+          >
+            <img
+              class="schedule-screenshot"
+              src="./assets/daycal-menubar-demo.png"
+              width="1120"
+              height="1058"
+              loading="lazy"
+              alt="Calendar Menu Bar showing upcoming events with calendar colours and an event submenu with Open Event, Edit Event, Join Meeting, More Actions and Delete Event."
+            />
+          </a>
+          <figcaption>
+            Actual DayCal Calendar Menu Bar · select to enlarge
+          </figcaption>
         </figure>
       </section>
       <section class="features" aria-labelledby="features-title">
@@ -193,8 +207,7 @@
           <p class="small muted">
             Currently in public beta, outside the Raycast Store. Google OAuth
             tester access may be limited. DayCal is the new public name; the
-            repository and installed extension may still say CalFlow during the
-            transition.
+            repository retains its original CalFlow name.
           </p>
         </div>
         <div class="beta-links">
@@ -227,5 +240,52 @@
         An independent, open-source extension for Raycast on macOS.
       </p>
     </footer>
+    <dialog
+      class="schedule-lightbox"
+      aria-label="DayCal Schedule demo screenshot"
+    >
+      <button
+        class="lightbox-close"
+        type="button"
+        aria-label="Close enlarged screenshot"
+        autofocus
+      >
+        ×
+      </button>
+      <img
+        src="./assets/daycal-schedule-demo.png"
+        width="1512"
+        height="968"
+        alt="DayCal Schedule in Raycast with demo events"
+      />
+    </dialog>
+    <script>
+      const screenshotLinks = document.querySelectorAll(
+        ".schedule-screenshot-link",
+      );
+      const lightbox = document.querySelector(".schedule-lightbox");
+      let activeScreenshotLink;
+      screenshotLinks.forEach((link) => {
+        link.addEventListener("click", (event) => {
+          event.preventDefault();
+          activeScreenshotLink = link;
+          const source = link.querySelector("img");
+          const enlarged = lightbox.querySelector("img");
+          enlarged.src = source.src;
+          enlarged.alt = source.alt;
+          enlarged.width = source.naturalWidth;
+          enlarged.height = source.naturalHeight;
+          lightbox.setAttribute("aria-label", source.alt);
+          lightbox.showModal();
+        });
+      });
+      lightbox
+        .querySelector("button")
+        .addEventListener("click", () => lightbox.close());
+      lightbox.addEventListener("click", (event) => {
+        if (event.target === lightbox) lightbox.close();
+      });
+      lightbox.addEventListener("close", () => activeScreenshotLink?.focus());
+    </script>
   </body>
 </html>

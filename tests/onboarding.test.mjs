@@ -294,7 +294,7 @@ check("Menu Bar keeps the manual setup CTA and existing account helper",
   menuBar.includes("const complete = await isCalendarSetupComplete()"),
   "Quiet background workers retain the setup action and use the existing account-scoped setup state.");
 
-console.log("\nCalFlow onboarding contract\n");
+console.log("\nDayCal onboarding contract\n");
 for (const item of checks) {
   console.log(`${item.pass ? "✅" : "❌"} ${item.name}`);
   console.log(`   ${item.detail}`);

@@ -106,7 +106,7 @@ export function canModifyEvent(
   if (!canEditEvent(calendar, event)) return false;
 
   // Moving/deleting is intentionally stricter than editing. Guest copies can
-  // be edited locally, but CalFlow must not treat the attendee as
+  // be edited locally, but DayCal must not treat the attendee as
   // the organiser of the shared event.
   if (isGuestEvent(event)) return false;
 
@@ -397,7 +397,7 @@ export function CalendarTransferView({
         <List.EmptyView
           icon={Icon.Calendar}
           title="No other writable calendars"
-          description="CalFlow could not find another calendar you can write to."
+          description="DayCal could not find another calendar you can write to."
         />
       ) : null}
     </List>
@@ -693,7 +693,7 @@ function Command(props: EventActionsLaunchProps) {
     return (
       <Detail
         navigationTitle="Event Actions"
-        markdown="### No event selected\n\nChoose an upcoming event from the CalFlow menu bar."
+        markdown="### No event selected\n\nChoose an upcoming event from the DayCal menu bar."
       />
     );
   }
@@ -751,7 +751,7 @@ function Command(props: EventActionsLaunchProps) {
       return (
         <Detail
           navigationTitle="Delete Event"
-          markdown="### Guest or read-only event\n\nCalFlow will not delete an event organised by someone else. Open it in Google Calendar if you want to change your attendance or remove it from your own calendar."
+          markdown="### Guest or read-only event\n\nDayCal will not delete an event organised by someone else. Open it in Google Calendar if you want to change your attendance or remove it from your own calendar."
         />
       );
     }

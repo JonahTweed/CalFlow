@@ -21,7 +21,7 @@ function Command() {
     <Detail
       navigationTitle="Set Up Your Calendars"
       markdown={
-        "## ✅ CalFlow is ready\n\nYour calendar roles, Schedule calendars, Menu Bar calendars and optional routing keywords have been saved for this Google account."
+        "## ✅ DayCal is ready\n\nYour calendar roles, Schedule calendars, Menu Bar calendars and optional routing keywords have been saved for this Google account."
       }
       actions={
         <ActionPanel>

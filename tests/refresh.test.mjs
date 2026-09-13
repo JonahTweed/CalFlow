@@ -159,7 +159,7 @@ const checks = [
   },
 ];
 
-console.log("\nCalFlow refresh contract\n");
+console.log("\nDayCal refresh contract\n");
 for (const check of checks) {
   console.log(`${check.pass ? "✅" : "❌"} ${check.label}`);
   console.log(`   ${check.detail}`);

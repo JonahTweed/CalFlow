@@ -27,7 +27,7 @@ function withGoogleAuthUser(rawUrl: string, authUser: string | undefined): strin
     if (!googleCalendarUrl) return rawUrl;
 
     // Never pin a browser-account slot such as /u/0/. Browser slot ordering is
-    // unrelated to the Google account CalFlow authenticated with in Raycast.
+    // unrelated to the Google account DayCal authenticated with in Raycast.
     url.pathname = url.pathname.replace(
       /^\/calendar\/u\/\d+(?=\/|$)/,
       "/calendar",
@@ -140,7 +140,7 @@ export async function loadSchedule(options: ScheduleOptions): Promise<{
 
   events.sort((a, b) => eventStartMillis(a) - eventStartMillis(b));
 
-  // Birthdays are a synthetic layer in CalFlow. Google can surface
+  // Birthdays are a synthetic layer in DayCal. Google can surface
   // contact birthdays through the primary calendar, so a normal calendar-ID
   // filter must not make them look like Personal events.
   //

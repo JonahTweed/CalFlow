@@ -12,9 +12,9 @@ type ExtensionPreferences = {
   "daysAhead": "7" | "14" | "30" | "60",
   /** Declined Events - Hide invitations that you have declined. */
   "hideDeclined": boolean,
-  /** Calendar Selection Mode - Choose which calendars CalFlow uses. Custom is managed with the Enabled Calendars command. */
+  /** Calendar Selection Mode - Choose which calendars DayCal uses. Custom is managed with the Enabled Calendars command. */
   "calendarSelectionMode": "custom" | "google" | "all",
-  /** Show Events in Menu Bar - Choose when CalFlow should appear in the macOS menu bar. */
+  /** Show Events in Menu Bar - Choose when DayCal should appear in the macOS menu bar. */
   "menuBarMode": "never" | "2" | "5" | "10" | "15" | "30" | "60" | "upcoming" | "always",
   /** Menu Bar Headline - Choose whether the menu bar shows smart timing status or only the current/next event title. */
   "menuBarHeadlineStyle": "smart" | "event-only"

@@ -83,7 +83,7 @@ const EMPTY_KEYWORD_TEXT: KeywordValues = {
 
 function debugSetup(label: string, payload: unknown): void {
   if (environment.isDevelopment) {
-    console.info(`[CalFlow setup] ${label}`, payload);
+    console.info(`[DayCal setup] ${label}`, payload);
   }
 }
 
@@ -428,7 +428,7 @@ export function CalendarSetupView({ onComplete }: Props) {
       await showToast({
         style: Toast.Style.Success,
         title: "Calendar setup saved",
-        message: "CalFlow is ready to use.",
+        message: "DayCal is ready to use.",
       });
       await onComplete?.();
     } catch (err) {
@@ -479,7 +479,7 @@ export function CalendarSetupView({ onComplete }: Props) {
       >
         <Form.Description
           title="Could Not Load Google Calendars"
-          text={`${error}\n\nYour Raycast Google sign-in is kept separate from CalFlow settings. Retry first, or check the connection for more detail.`}
+          text={`${error}\n\nYour Raycast Google sign-in is kept separate from DayCal settings. Retry first, or check the connection for more detail.`}
         />
       </Form>
     );
@@ -501,7 +501,7 @@ export function CalendarSetupView({ onComplete }: Props) {
       >
         <Form.Description
           title="1. Choose Calendar Roles"
-          text="Tell CalFlow which writable calendar should be used for Personal, Work, Shared / Partner and Family events. Personal is required; the other roles are optional."
+          text="Tell DayCal which writable calendar should be used for Personal, Work, Shared / Partner and Family events. Personal is required; the other roles are optional."
         />
 
         <Form.Dropdown

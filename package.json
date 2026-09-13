@@ -1,9 +1,9 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
   "name": "calendar-shortcuts-google",
-  "title": "CalFlow",
+  "title": "DayCal",
   "description": "A fast Google Calendar schedule, menu bar, quick add, and event management extension for Raycast.",
-  "icon": "calflow.png",
+  "icon": "daycal.png",
   "author": "JonahTweed",
   "platforms": [
     "macOS"
@@ -29,21 +29,21 @@
     {
       "name": "event-actions",
       "title": "Event Actions",
-      "subtitle": "CalFlow",
-      "description": "Manage a Google Calendar event selected from CalFlow.",
+      "subtitle": "DayCal",
+      "description": "Manage a Google Calendar event selected from DayCal.",
       "mode": "view"
     },
     {
       "name": "enabled-calendars",
       "title": "Enabled Calendars",
-      "subtitle": "CalFlow",
+      "subtitle": "DayCal",
       "description": "Choose which Google calendars appear when Custom calendar selection is active.",
       "mode": "view"
     },
     {
       "name": "set-up-calendars",
       "title": "Set up Calendars",
-      "subtitle": "CalFlow",
+      "subtitle": "DayCal",
       "description": "Assign calendar roles and optional smart-routing keywords.",
       "mode": "view"
     },
@@ -131,14 +131,14 @@
     {
       "name": "menu-bar-settings",
       "title": "Calendar Settings",
-      "subtitle": "CalFlow",
+      "subtitle": "DayCal",
       "description": "Configure independent Schedule and menu-bar calendars and menu-bar filtering.",
       "mode": "view"
     },
     {
       "name": "menu-bar",
       "title": "Calendar Menu Bar",
-      "subtitle": "CalFlow",
+      "subtitle": "DayCal",
       "description": "Show current and upcoming Google Calendar events in the macOS menu bar.",
       "mode": "menu-bar",
       "interval": "1m"
@@ -147,21 +147,21 @@
       "name": "refresh-diagnostics",
       "title": "Refresh Diagnostics",
       "subtitle": "Development",
-      "description": "Run a non-destructive runtime check of the live CalFlow menu-bar refresh pipeline.",
+      "description": "Run a non-destructive runtime check of the live DayCal menu-bar refresh pipeline.",
       "mode": "view"
     },
     {
       "name": "check-connection",
       "title": "Check Google Calendar Connection",
-      "subtitle": "CalFlow",
+      "subtitle": "DayCal",
       "description": "Verify that the direct Google Calendar connection is working.",
       "mode": "view"
     },
     {
       "name": "disconnect-google",
       "title": "Disconnect Google Calendar",
-      "subtitle": "CalFlow",
-      "description": "Sign CalFlow out of the connected Google account while keeping CalFlow settings.",
+      "subtitle": "DayCal",
+      "description": "Sign DayCal out of the connected Google account while keeping DayCal settings.",
       "mode": "no-view"
     },
     {
@@ -218,7 +218,7 @@
     {
       "name": "calendarSelectionMode",
       "title": "Calendar Selection Mode",
-      "description": "Choose which calendars CalFlow uses. Custom is managed with the Enabled Calendars command.",
+      "description": "Choose which calendars DayCal uses. Custom is managed with the Enabled Calendars command.",
       "type": "dropdown",
       "required": true,
       "data": [
@@ -240,7 +240,7 @@
     {
       "name": "menuBarMode",
       "title": "Show Events in Menu Bar",
-      "description": "Choose when CalFlow should appear in the macOS menu bar.",
+      "description": "Choose when DayCal should appear in the macOS menu bar.",
       "type": "dropdown",
       "required": false,
       "default": "upcoming",
@@ -306,9 +306,10 @@
     "dev": "ray develop",
     "build": "ray build",
     "lint": "ray lint",
+    "test:branding": "node --test tests/branding.test.mjs",
     "test:parser": "tsx tests/parser.test.ts",
     "test:routing": "tsx tests/routing.test.ts",
-    "test": "npm run test:parser && npm run test:routing && npm run test:refresh && npm run test:onboarding && npm run test:smart-status && npm run test:menu-row && npm run test:event-opening",
+    "test": "npm run test:parser && npm run test:routing && npm run test:refresh && npm run test:onboarding && npm run test:smart-status && npm run test:menu-row && npm run test:event-opening && npm run test:branding",
     "test:refresh": "node tests/refresh.test.mjs",
     "test:onboarding": "node tests/onboarding.test.mjs",
     "test:smart-status": "node tests/smart-status.test.mjs",

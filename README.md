@@ -1,12 +1,12 @@
-# CalFlow
+# DayCal
 
 <p align="center">
-  <img src="assets/branding/calflow-store-icon-3d-1024.png" width="160" alt="CalFlow icon">
+  <img src="assets/branding/daycal-store-icon-3d-1024.png" width="160" alt="DayCal icon">
 </p>
 
-**CalFlow** is a Google Calendar extension for [Raycast](https://www.raycast.com/) with a fast Schedule view, a persistent menu-bar calendar, natural-language Quick Add, event editing, calendar routing, and account-aware setup.
+**DayCal** is a Google Calendar extension for [Raycast](https://www.raycast.com/) with a fast Schedule view, a persistent menu-bar calendar, natural-language Quick Add, event editing, calendar routing, and account-aware setup.
 
-> **Beta:** CalFlow is under active testing and is not yet published in the Raycast Store.
+> **Beta:** DayCal is under active testing and is not yet published in the Raycast Store.
 
 **Official website:** [DayCal](https://daycal.co.uk/) is the new public website and product name. The repository and extension identifiers are unchanged. See [website maintenance and domain setup](WEBSITE.md).
 
@@ -23,9 +23,9 @@
 - **Guided setup** — map Personal, Work, Shared / Partner, and Family roles after signing in.
 - **Multiple Google accounts** — role mappings and calendar selections stay scoped to the connected account.
 - **Native Google sign-in** — no downloaded client-secret file or Terminal OAuth helper is required.
-- **Smart Status** — the menu-bar headline describes the events CalFlow is currently showing without claiming visibility into calendars you excluded.
+- **Smart Status** — the menu-bar headline describes the events DayCal is currently showing without claiming visibility into calendars you excluded.
 
-CalFlow reads and writes Google Calendar directly. **Apple Calendar is not used.**
+DayCal reads and writes Google Calendar directly. **Apple Calendar is not used.**
 
 ## Beta installation
 
@@ -50,7 +50,7 @@ Raycast will load the local extension.
 Open **Schedule** or explicitly launch **Calendar Menu Bar**. On first use:
 
 1. sign in to Google through Raycast;
-2. CalFlow opens **Set Up Calendars** for the connected account if setup is incomplete;
+2. DayCal opens **Set Up Calendars** for the connected account if setup is incomplete;
 3. complete the three-step setup, including choosing independent calendar sets for Schedule and the Menu Bar.
 
 Automatic/background Menu Bar launches stay quiet when setup is incomplete. The dropdown keeps a **Set Up Calendars** action so you can finish when ready; background refreshes do not open the setup wizard.
@@ -70,7 +70,7 @@ If Google sign-in is blocked during the beta, please report it through GitHub Is
 | **Add Work Event** | Quick Add to the Work role |
 | **Add Shared Event** | Quick Add to the Shared / Partner role |
 | **Check Google Calendar Connection** | Verify Google Calendar access |
-| **Disconnect Google Calendar** | Sign out locally while preserving CalFlow settings |
+| **Disconnect Google Calendar** | Sign out locally while preserving DayCal settings |
 
 Development builds also include non-destructive diagnostics and parsing/setup replay commands to help beta testing.
 
@@ -85,7 +85,7 @@ These are optional Raycast hotkeys:
 | Add Work Event | `⌃⌥W` |
 | Add Shared Event | `⌃⌥J` |
 
-Configure them in **Raycast Settings → Extensions → CalFlow**.
+Configure them in **Raycast Settings → Extensions → DayCal**.
 
 ## Quick Add examples
 
@@ -100,7 +100,7 @@ Zoom
 https://example.com/meeting
 ```
 
-CalFlow supports UK (`DD/MM/YYYY`) and US (`MM/DD/YYYY`) date modes from Calendar Settings.
+DayCal supports UK (`DD/MM/YYYY`) and US (`MM/DD/YYYY`) date modes from Calendar Settings.
 
 ## Opening events and calendars
 
@@ -110,7 +110,7 @@ CalFlow supports UK (`DD/MM/YYYY`) and US (`MM/DD/YYYY`) date modes from Calenda
 
 ## Event permissions
 
-CalFlow deliberately treats owned events and invitations differently.
+DayCal deliberately treats owned events and invitations differently.
 
 Owned events can expose actions such as Edit, Move, and Delete. Guest/invited events use safer actions such as Copy to Calendar and do not receive destructive owner-style actions where Google does not indicate ownership.
 
@@ -120,28 +120,28 @@ In the Menu Bar event submenu, ordinary writable one-off events keep **Move to C
 
 See the full [Privacy Policy](PRIVACY.md) and [Security Policy](SECURITY.md).
 
-CalFlow uses Raycast's native Google OAuth support and requests:
+DayCal uses Raycast's native Google OAuth support and requests:
 
 - `calendar.events` — read and manage calendar events;
 - `calendar.calendarlist.readonly` — read the user's calendar list, colours, and access roles.
 
 OAuth tokens are managed by Raycast. The repository contains the OAuth **client ID**, which is public by design, but contains no client secret, refresh token, or access token.
 
-CalFlow stores extension preferences and account-scoped calendar configuration locally through Raycast. The persistent Menu Bar also uses a local Raycast cache of upcoming event data so it can render quickly without contacting Google on every click. CalFlow does not operate a backend server that receives this calendar data.
+DayCal stores extension preferences and account-scoped calendar configuration locally through Raycast. The persistent Menu Bar also uses a local Raycast cache of upcoming event data so it can render quickly without contacting Google on every click. DayCal does not operate a backend server that receives this calendar data.
 
-CalFlow does not use calendar data for advertising, tracking, analytics, data brokerage, or training generalized AI/ML models.
+DayCal does not use calendar data for advertising, tracking, analytics, data brokerage, or training generalized AI/ML models.
 
 ## Known beta limitations
 
-- Raycast's native DatePicker free-text suggestion parser can reject or inconsistently interpret some abbreviated phrases. CalFlow validates Start/End relationships and preserves event duration when Start moves past End, but does not replace Raycast's DatePicker parser.
-- Timed events and all-day events can both be edited in Raycast, but CalFlow intentionally does **not** convert timed events into all-day events or vice versa yet.
+- Raycast's native DatePicker free-text suggestion parser can reject or inconsistently interpret some abbreviated phrases. DayCal validates Start/End relationships and preserves event duration when Start moves past End, but does not replace Raycast's DatePicker parser.
+- Timed events and all-day events can both be edited in Raycast, but DayCal intentionally does **not** convert timed events into all-day events or vice versa yet.
 - Moving recurring events is not supported; use **Copy to Calendar…** where offered.
 - The public Google OAuth configuration may still require additional verification before a completely open release.
-- CalFlow is currently macOS-only.
+- DayCal is currently macOS-only.
 
 ## Internal compatibility note
 
-The Raycast manifest `name` and some local-storage/cache namespaces still use the legacy `calendar-shortcuts` identifier. That is intentional for this beta so existing tested installations keep their local state while the public-facing product is branded **CalFlow**.
+The Raycast manifest `name` and some local-storage/cache namespaces still use the legacy `calendar-shortcuts` identifier. That is intentional for this beta so existing tested installations keep their local state while the public-facing product is branded **DayCal**.
 
 ## Testing
 
@@ -164,7 +164,7 @@ Useful bug reports include:
 
 - what you expected;
 - what happened instead;
-- which CalFlow command you were using;
+- which DayCal command you were using;
 - whether the event was timed or all-day;
 - whether the calendar was owned, shared, or read-only;
 - screenshots or a short screen recording where helpful.

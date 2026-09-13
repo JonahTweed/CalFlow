@@ -392,7 +392,7 @@ function ScheduleView() {
 
   if (setupComplete === null) {
     return (
-      <List isLoading searchBarPlaceholder="Loading CalFlow…" />
+      <List isLoading searchBarPlaceholder="Loading DayCal…" />
     );
   }
 
@@ -409,7 +409,7 @@ function ScheduleView() {
           description={
             setupRedirectError
               ? setupRedirectError
-              : "Finish the guided setup for this Google account, then CalFlow will be ready to use."
+              : "Finish the guided setup for this Google account, then DayCal will be ready to use."
           }
           actions={
             setupRedirectError ? (

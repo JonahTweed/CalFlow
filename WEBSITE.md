@@ -2,14 +2,14 @@
 
 The public website lives in `docs/` and is published by GitHub Pages from **main → /docs**. Hosting is free for this public repository. Fasthosts provides domain registration/DNS only; no hosting plan or paid product is required.
 
-The website introduces the DayCal name. It does not rename this repository, the installed extension or its internal identifiers.
+The website and extension use the DayCal public name. The repository, OAuth configuration and compatibility identifiers retain their existing names.
 
 ## Maintenance
 
 - Edit `docs/index.html` for homepage copy, `docs/assets/styles.css` for layout, and the HTML files in `docs/privacy/` and `docs/security/` for policies.
 - Keep the web policies aligned with authoritative `PRIVACY.md` and `SECURITY.md`, adapting the public name and support contact. The web privacy page also describes static GitHub Pages hosting.
 - Keep `docs/CNAME` set to `daycal.co.uk`. `.nojekyll` serves the plain static files without Jekyll processing.
-- The icon is a reduced copy of the existing public branding asset. The schedule illustration contains invented example events, not user calendar data.
+- The icon is a reduced copy of the existing public branding asset. Schedule and Menu Bar previews use real screenshots supplied by the maintainer. Replace screenshots with fresh demo captures when visible UI changes; do not paint new branding into captured UI. The Menu Bar capture shows the current DayCal branding. Both screenshots share an accessible enlargement overlay.
 - There are no JavaScript dependencies, external fonts, trackers, analytics, cookies or third-party scripts added by the site.
 - Preview with `python3 -m http.server 8765 --directory docs`, then visit `http://localhost:8765/`, `/privacy/` and `/security/`.
 - Check internal links, mobile/desktop layout and page metadata before publishing. Push site edits to `main`; Pages deploys automatically.
@@ -52,4 +52,4 @@ Complete domain DNS and HTTPS first. These are configuration instructions, not a
 6. Save the branding edits. Use **Verify Branding** when offered on the Branding page, and review **Verification Center** for any remaining submission requirements. Resubmit once the live URLs and domain verification pass. If an earlier review is in progress, inspect its status before cancelling or replacing it.
 7. Keep OAuth client IDs, redirect URIs, audiences and scopes unchanged. Existing scopes remain `calendar.events` and `calendar.calendarlist.readonly`; this website does not require additional scopes. Brand verification is separate from any outstanding sensitive-scope review.
 
-Official guidance: [Manage OAuth App Branding](https://support.google.com/cloud/answer/15549049), [Google Auth Platform](https://support.google.com/cloud/answer/15544987), and [verification requirements](https://support.google.com/cloud/answer/13464321). The homepage and privacy policy must be public on a verified domain, and the reviewing account must have the appropriate Cloud project ownership/access. The current website explains the CalFlow-to-DayCal transition; further extension branding changes remain a separate task.
+Official guidance: [Manage OAuth App Branding](https://support.google.com/cloud/answer/15549049), [Google Auth Platform](https://support.google.com/cloud/answer/15544987), and [verification requirements](https://support.google.com/cloud/answer/13464321). The homepage and privacy policy must be public on a verified domain, and the reviewing account must have the appropriate Cloud project ownership/access. The website and local extension use DayCal; Google OAuth branding must be managed separately in the Google console.

@@ -235,7 +235,7 @@ function Command() {
         label: "Account/setup consistency",
         detail:
           after.setupComplete === setupComplete
-            ? "The refreshed Menu Bar snapshot belongs to the same connected account/setup state as CalFlow."
+            ? "The refreshed Menu Bar snapshot belongs to the same connected account/setup state as DayCal."
             : "The refreshed Menu Bar snapshot disagrees with the current account setup state.",
       });
 

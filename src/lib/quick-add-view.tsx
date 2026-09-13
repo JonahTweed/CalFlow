@@ -113,7 +113,7 @@ export function QuickAddView({
       <Detail
         navigationTitle={commandTitle}
         isLoading
-        markdown="Loading CalFlow…"
+        markdown="Loading DayCal…"
       />
     );
   }

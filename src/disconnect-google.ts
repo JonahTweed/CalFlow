@@ -21,7 +21,7 @@ export default async function Command() {
   const confirmed = await confirmAlert({
     title: "Disconnect Google Calendar?",
     message:
-      "This signs CalFlow out of Google in Raycast. Your Raycast preferences, calendar selections, role mappings, and routing keywords are kept. This removes the locally stored OAuth tokens but does not revoke CalFlow in your Google Account.",
+      "This signs DayCal out of Google in Raycast. Your Raycast preferences, calendar selections, role mappings, and routing keywords are kept. This removes the locally stored OAuth tokens but does not revoke DayCal in your Google Account.",
     primaryAction: {
       title: "Disconnect",
       style: Alert.ActionStyle.Destructive,

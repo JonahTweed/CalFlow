@@ -274,7 +274,7 @@ function Command() {
                       onAction={disableAll}
                     />
                   </ActionPanel.Section>
-                  <ActionPanel.Section title="CalFlow">
+                  <ActionPanel.Section title="DayCal">
                     <Action
                       title="Open Extension Settings"
                       icon={Icon.Gear}

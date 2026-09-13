@@ -37,7 +37,7 @@ check(
   "The existing 64-character target remains unchanged.",
 );
 
-console.log("\nCalFlow menu-row contract\n");
+console.log("\nDayCal menu-row contract\n");
 
 let failed = 0;
 

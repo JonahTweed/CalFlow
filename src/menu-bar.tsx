@@ -432,7 +432,7 @@ function headlineForMode(
   if (mode === "always") return { visible: true, item: headline };
 
   if (mode === "upcoming") {
-    // Keep CalFlow available as a compact calendar icon on days
+    // Keep DayCal available as a compact calendar icon on days
     // with no remaining event. Only put event text in the macOS menu bar when
     // there is a current or upcoming event today; future days stay in the
     // dropdown without turning the headline into "Nothing else shown today".
@@ -852,8 +852,8 @@ function Command(
             : ""
         }${menuRowTime(headline.item, now)}`
       : menuBarOnlyMeetings
-        ? "CalFlow — meetings only"
-        : "CalFlow";
+        ? "DayCal — meetings only"
+        : "DayCal";
 
   return (
     <MenuBarExtra
@@ -864,7 +864,7 @@ function Command(
       isLoading={isLoading}
     >
       {setupComplete === false ? (
-        <MenuBarExtra.Section title="CalFlow">
+        <MenuBarExtra.Section title="DayCal">
         <MenuBarExtra.Item
           title="Open Calendar"
           icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}
@@ -1052,7 +1052,7 @@ function Command(
         </MenuBarExtra.Section>
       ) : null}
 
-      <MenuBarExtra.Section title="CalFlow">
+      <MenuBarExtra.Section title="DayCal">
         <MenuBarExtra.Item
           title="Open Calendar"
           icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}

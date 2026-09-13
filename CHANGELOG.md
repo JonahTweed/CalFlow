@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Renamed extension display text, manifest branding, icons and current documentation to DayCal. Existing command identifiers, account-scoped storage, OAuth configuration and repository URLs are unchanged.
+- Replaced the website Schedule mockup with a real demo screenshot, added the Menu Bar screenshot, and added a shared enlargement overlay with close, Escape and backdrop dismissal. The Menu Bar capture shows the renamed DayCal interface.
+
 ## 0.15.0 Public Beta Candidate — 2026-09-13
 
 - Added the DayCal static website, privacy and security pages in `docs/` for free GitHub Pages hosting at `daycal.co.uk`. Website branding introduces DayCal without renaming the repository or changing extension behaviour, OAuth or compatibility identifiers.
