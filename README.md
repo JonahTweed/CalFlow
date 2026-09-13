@@ -99,6 +99,12 @@ https://example.com/meeting
 
 CalFlow supports UK (`DD/MM/YYYY`) and US (`MM/DD/YYYY`) date modes from Calendar Settings.
 
+## Opening events and calendars
+
+Open Event / Open in Google Calendar uses your default browser from Schedule, Next Up, Edit Event, Event Actions, and the menu bar. Links retain Google's event target and identify the connected Google account, including secondary accounts. Sign in to that account in your browser if prompted.
+
+**Open Calendar** in the menu bar also uses your default browser, opening the calendar view for the currently connected Google account. It resolves the account when clicked, even if no events are visible. If Google supplies no event link, the existing fallback opens the event day rather than a specific event.
+
 ## Event permissions
 
 CalFlow deliberately treats owned events and invitations differently.

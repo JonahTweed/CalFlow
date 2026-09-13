@@ -39,6 +39,16 @@ function withGoogleAuthUser(rawUrl: string, authUser: string | undefined): strin
   }
 }
 
+// Resolve from the full calendar list at click time, independent of event
+// visibility or cached events, so an empty schedule still opens the right account.
+export async function connectedGoogleCalendarViewUrl(): Promise<string> {
+  const authUser = connectedGoogleAccountId(await listCalendars());
+  if (!authUser) {
+    throw new Error("Could not identify the connected Google account. Refresh your connection and try again.");
+  }
+  return withGoogleAuthUser("https://calendar.google.com/calendar/r", authUser);
+}
+
 export function accountAwareGoogleCalendarUrl(
   event: GoogleEvent,
   authUser: string | undefined,

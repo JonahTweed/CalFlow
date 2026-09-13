@@ -1,7 +1,6 @@
 import { withAccessToken } from "@raycast/utils";
 import { googleOAuth } from "./lib/google-oauth";
 import {
-  Application,
   Cache,
   Color,
   Icon,
@@ -32,6 +31,7 @@ import {
 import {
   calendarDisplayColor,
   conferenceUrl,
+  connectedGoogleCalendarViewUrl,
   eventEndMillis,
   eventStartMillis,
   isAllDay,
@@ -60,7 +60,6 @@ type MenuBarHeadlineStyle = "smart" | "event-only";
 interface Preferences {
   hideDeclined: boolean;
   calendarSelectionMode: CalendarSelectionMode;
-  calendarApp: Application;
   menuBarMode: MenuBarMode;
   menuBarHeadlineStyle: MenuBarHeadlineStyle;
 }
@@ -373,9 +372,30 @@ function menuRowTitle(
 
   // If it is still long, drop the weekday but keep an unambiguous month/day
   // using the user's selected UK/US ordering.
-  return joinMenuRowParts(order, {
+  const compactParts = {
     ...shorterTimeParts,
     date: shorterMenuRowDate(item, now, dateStyle),
+  };
+
+  const metadataValues = order
+    .filter((key) => key !== "title")
+    .map((key) => compactParts[key])
+    .filter((value): value is string => Boolean(value));
+
+  const separatorLength = metadataValues.length * 3; // " · "
+  const metadataLength = metadataValues.reduce(
+    (total, value) => total + value.length,
+    0,
+  );
+
+  const maxTitleLength = Math.max(
+    12,
+    MENU_ROW_COMPACT_THRESHOLD - metadataLength - separatorLength,
+  );
+
+  return joinMenuRowParts(order, {
+    ...compactParts,
+    title: truncate(title, maxTitleLength),
   });
 }
 
@@ -453,6 +473,14 @@ function calendarDayUrl(item: ScheduleEvent): string {
   const day = String(start.getDate()).padStart(2, "0");
 
   return `https://calendar.google.com/calendar/u/0/r/day/${year}/${month}/${day}`;
+}
+
+async function openCalendarInBrowser(): Promise<void> {
+  try {
+    await open(await connectedGoogleCalendarViewUrl());
+  } catch (error) {
+    await showHUD(error instanceof Error ? error.message : "Could not open Google Calendar");
+  }
 }
 
 function calendarEventBrowserUrl(item: ScheduleEvent): string {
@@ -809,6 +837,11 @@ function Command(
     >
       {setupComplete === false ? (
         <MenuBarExtra.Section title="CalFlow">
+        <MenuBarExtra.Item
+          title="Open Calendar"
+          icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}
+          onAction={openCalendarInBrowser}
+        />
           <MenuBarExtra.Item
             title="Set Up Calendars"
             subtitle="Finish first-run calendar setup"
@@ -970,6 +1003,11 @@ function Command(
       ) : null}
 
       <MenuBarExtra.Section title="CalFlow">
+        <MenuBarExtra.Item
+          title="Open Calendar"
+          icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}
+          onAction={openCalendarInBrowser}
+        />
         <MenuBarExtra.Item
           title="Open Schedule"
           icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}

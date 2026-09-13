@@ -2,7 +2,6 @@ import { withAccessToken } from "@raycast/utils";
 import { googleOAuth } from "./lib/google-oauth";
 import {
   Action,
-  Application,
   ActionPanel,
   Alert,
   Color,
@@ -54,7 +53,6 @@ interface Preferences {
   daysAhead: string;
   hideDeclined: boolean;
   calendarSelectionMode: CalendarSelectionMode;
-  calendarApp: Application;
 }
 
 function mapsUrl(location: string): string {
@@ -519,10 +517,9 @@ function ScheduleView() {
               actions={
                 <ActionPanel>
                   {overview.nextUp.item.event.htmlLink ? (
-                    <Action.Open
+                    <Action.OpenInBrowser
                       title="Open in Google Calendar"
-                      target={overview.nextUp.item.event.htmlLink}
-                      application={preferences.calendarApp}
+                      url={overview.nextUp.item.event.htmlLink}
                       icon={Icon.Calendar}
                     />
                   ) : null}
@@ -632,10 +629,9 @@ function ScheduleView() {
                 actions={
                   <ActionPanel>
                     {item.event.htmlLink ? (
-                      <Action.Open
+                      <Action.OpenInBrowser
                         title="Open in Google Calendar"
-                        target={item.event.htmlLink}
-                        application={preferences.calendarApp}
+                        url={item.event.htmlLink}
                         icon={Icon.Calendar}
                       />
                     ) : null}

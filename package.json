@@ -207,13 +207,6 @@
       ]
     },
     {
-      "name": "calendarApp",
-      "title": "Open Google Calendar In",
-      "description": "Choose the Mac app used to open Google Calendar event links. Select your installed Google Calendar Chrome app if you use one.",
-      "type": "appPicker",
-      "required": true
-    },
-    {
       "name": "hideDeclined",
       "title": "Declined Events",
       "description": "Hide invitations that you have declined.",
@@ -315,10 +308,12 @@
     "lint": "ray lint",
     "test:parser": "tsx tests/parser.test.ts",
     "test:routing": "tsx tests/routing.test.ts",
-    "test": "npm run test:parser && npm run test:routing && npm run test:refresh && npm run test:onboarding && npm run test:smart-status",
+    "test": "npm run test:parser && npm run test:routing && npm run test:refresh && npm run test:onboarding && npm run test:smart-status && npm run test:menu-row && npm run test:event-opening",
     "test:refresh": "node tests/refresh.test.mjs",
     "test:onboarding": "node tests/onboarding.test.mjs",
-    "test:smart-status": "node tests/smart-status.test.mjs"
+    "test:smart-status": "node tests/smart-status.test.mjs",
+    "test:menu-row": "node tests/menu-row.test.mjs",
+    "test:event-opening": "node tests/event-opening.test.mjs"
   },
   "dependencies": {
     "@raycast/api": "^1.104.0",

@@ -1,21 +1,15 @@
 import {
   Action,
-  Application,
   ActionPanel,
   Form,
   Icon,
   Toast,
   showToast,
-  getPreferenceValues,
   useNavigation,
 } from "@raycast/api";
 import { useState } from "react";
 import { updateEvent } from "./lib/google";
 import { GoogleCalendarEntry, GoogleEvent } from "./lib/types";
-
-interface CalendarPreferences {
-  calendarApp: Application;
-}
 
 interface Props {
   calendar: GoogleCalendarEntry;
@@ -88,7 +82,6 @@ function calendarDayNumber(value: Date): number {
 }
 
 export default function EditEvent({ calendar, event, onSaved }: Props) {
-  const preferences = getPreferenceValues<CalendarPreferences>();
   const { pop } = useNavigation();
   const [saving, setSaving] = useState(false);
 
@@ -222,10 +215,9 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         <ActionPanel>
           <Action.SubmitForm title="Save Event" icon={Icon.Checkmark} onSubmit={submit} />
           {event.htmlLink ? (
-            <Action.Open
+            <Action.OpenInBrowser
               title="Open in Google Calendar"
-              target={event.htmlLink}
-              application={preferences.calendarApp}
+              url={event.htmlLink}
             />
           ) : null}
         </ActionPanel>

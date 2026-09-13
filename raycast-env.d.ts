@@ -10,8 +10,6 @@
 type ExtensionPreferences = {
   /** Schedule Range - How far ahead Schedule should load. */
   "daysAhead": "7" | "14" | "30" | "60",
-  /** Open Google Calendar In - Choose the Mac app used to open Google Calendar event links. Select your installed Google Calendar Chrome app if you use one. */
-  "calendarApp"?: import("@raycast/api").Application,
   /** Declined Events - Hide invitations that you have declined. */
   "hideDeclined": boolean,
   /** Calendar Selection Mode - Choose which calendars CalFlow uses. Custom is managed with the Enabled Calendars command. */
