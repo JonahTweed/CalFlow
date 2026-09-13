@@ -82,6 +82,14 @@ check(
 );
 
 check(
+  "Account-scoped JSON writes are serialized",
+  settings.includes("let localStorageWriteQueue: Promise<void> = Promise.resolve()") &&
+    settings.includes("localStorageWriteQueue.then(() =>") &&
+    settings.includes("localStorageWriteQueue = write.catch(() => {})"),
+  "Concurrent setup setters are queued so Raycast LocalStorage cannot race separate calendar/keyword writes.",
+);
+
+check(
   "Missing keyword submissions cannot silently clear routing",
   setup.includes("validatedKeywordValues(") &&
     settings.includes('typeof value !== "string"') &&
