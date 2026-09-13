@@ -13,7 +13,7 @@ import {
   open,
   showHUD,
 } from "@raycast/api";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarSelectionMode,
   getMenuBarEnabledCalendarIds,
@@ -605,6 +605,7 @@ function Command(
   const [setupComplete, setSetupComplete] = useState<boolean | null>(
     initialSnapshot?.setupComplete ?? null,
   );
+  const setupRedirectStartedRef = useRef(false);
   const [events, setEvents] = useState<ScheduleEvent[]>(
     () =>
       initialSnapshot?.events.filter((item) =>
@@ -751,6 +752,30 @@ function Command(
       void syncMenuBarRuntimeSettings();
     }
   }, [displayOnlyRefresh, syncMenuBarRuntimeSettings]);
+
+  useEffect(() => {
+    if (
+      environment.launchType !== LaunchType.UserInitiated ||
+      setupComplete !== false ||
+      setupRedirectStartedRef.current
+    ) return;
+
+    // Only explicit launches guide the user into setup. Recheck the existing
+    // account-scoped flag because an incomplete snapshot may outlive setup.
+    // Keep the guard set even on failure: the dropdown CTA allows a manual
+    // retry without repeated automatic launches or a polling worker.
+    setupRedirectStartedRef.current = true;
+    void isCalendarSetupComplete().then(async (complete) => {
+      setSetupComplete(complete);
+      if (complete) return;
+      await launchCommand({
+        name: "set-up-calendars",
+        type: LaunchType.UserInitiated,
+      });
+    }).catch((err) => {
+      setError(err instanceof Error ? err.message : String(err));
+    });
+  }, [setupComplete]);
 
   const toggleMeetingFilter = useCallback(async () => {
     const next = !menuBarOnlyMeetings;

@@ -1,6 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import vm from "node:vm";
+import ts from "typescript";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, "..");
@@ -17,6 +19,7 @@ const command = fs.readFileSync(commandPath, "utf8");
 const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 const schedule = fs.readFileSync(schedulePath, "utf8");
 const replay = fs.readFileSync(replayPath, "utf8");
+const menuBar = fs.readFileSync(path.join(root, "src", "menu-bar.tsx"), "utf8");
 
 const checks = [];
 function check(name, pass, detail) {
@@ -223,6 +226,73 @@ check(
     replayCommand?.description?.includes("keeping saved calendar choices"),
   "The development helper no longer implies that it is safe to wipe an account's configuration during onboarding tests.",
 );
+
+// Execute the actual redirect effect with mocked Raycast/storage boundaries.
+// This verifies launch behavior without claiming to mount Raycast's native UI.
+const menuSource = ts.createSourceFile("menu-bar.tsx", menuBar, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+const redirectEffects = [];
+function findRedirectEffect(node) {
+  if (ts.isCallExpression(node) && node.expression.getText(menuSource) === "useEffect" &&
+      node.arguments[0]?.getText(menuSource).includes("setupRedirectStartedRef")) {
+    redirectEffects.push(node.arguments[0].getText(menuSource));
+  }
+  ts.forEachChild(node, findRedirectEffect);
+}
+findRedirectEffect(menuSource);
+check("Menu Bar has one guarded setup redirect effect", redirectEffects.length === 1 &&
+  menuBar.includes("const setupRedirectStartedRef = useRef(false)"),
+  "The launch guard persists across renders of the current command.");
+
+if (redirectEffects.length === 1) {
+  for (const scenario of [
+    { name: "Explicit incomplete Menu Bar launch opens setup once", launchType: "userInitiated", cached: false, complete: false, launches: 1, reads: 1 },
+    { name: "Background incomplete Menu Bar launch stays quiet", launchType: "background", cached: false, complete: false, launches: 0, reads: 0 },
+    { name: "Explicit completed Menu Bar launch keeps normal behavior", launchType: "userInitiated", cached: true, complete: true, launches: 0, reads: 0 },
+    { name: "Background completed Menu Bar launch keeps normal behavior", launchType: "background", cached: true, complete: true, launches: 0, reads: 0 },
+    { name: "Unknown setup waits for the existing loader", launchType: "userInitiated", cached: null, complete: false, launches: 0, reads: 0 },
+    { name: "Stale incomplete snapshot does not reopen completed setup", launchType: "userInitiated", cached: false, complete: true, launches: 0, reads: 1 },
+    { name: "Failed setup launch does not automatically retry", launchType: "userInitiated", cached: false, complete: false, launches: 1, reads: 1, failLaunch: true },
+    { name: "Failed account lookup does not launch setup or retry", launchType: "userInitiated", cached: false, complete: false, launches: 0, reads: 1, failRead: true },
+  ]) {
+    const launches = [];
+    const errors = [];
+    let reads = 0;
+    const context = {
+      environment: { launchType: scenario.launchType },
+      LaunchType: { UserInitiated: "userInitiated", Background: "background" },
+      setupComplete: scenario.cached,
+      setupRedirectStartedRef: { current: false },
+      isCalendarSetupComplete: async () => {
+        reads++;
+        if (scenario.failRead) throw new Error("Lookup failed");
+        return scenario.complete;
+      },
+      setSetupComplete: (complete) => { context.setupComplete = complete; },
+      launchCommand: async (options) => {
+        launches.push(options);
+        if (scenario.failLaunch) throw new Error("Launch failed");
+      },
+      setError: (error) => errors.push(error),
+    };
+    const effect = vm.runInNewContext(`(${redirectEffects[0]})`, context);
+    effect();
+    effect(); // A render while the asynchronous lookup is pending.
+    await new Promise((resolve) => setImmediate(resolve));
+    effect(); // A render after success/failure must not repeat the launch.
+    await new Promise((resolve) => setImmediate(resolve));
+    check(scenario.name,
+      launches.length === scenario.launches && reads === scenario.reads &&
+      launches.every((options) => options.name === "set-up-calendars" && options.type === "userInitiated") &&
+      errors.length === (scenario.failLaunch || scenario.failRead ? 1 : 0),
+      "Executed redirect with mocked account completion and launchCommand, including repeated renders.");
+  }
+}
+
+check("Menu Bar keeps the manual setup CTA and existing account helper",
+  menuBar.includes('title="Set Up Calendars"') &&
+  menuBar.includes('subtitle="Finish first-run calendar setup"') &&
+  menuBar.includes("const complete = await isCalendarSetupComplete()"),
+  "Quiet background workers retain the setup action and use the existing account-scoped setup state.");
 
 console.log("\nCalFlow onboarding contract\n");
 for (const item of checks) {
