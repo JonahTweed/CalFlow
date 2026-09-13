@@ -6,6 +6,7 @@ import {
   Icon,
   LaunchType,
   Toast,
+  environment,
   getPreferenceValues,
   launchCommand,
   openExtensionPreferences,
@@ -20,6 +21,7 @@ import {
   defaultRoleSelections,
   formatKeywordList,
   getCalendarRoles,
+  getCalendarSettingsDebugScope,
   getMenuBarEnabledCalendarIds,
   getRoutingKeywords,
   getScheduleEnabledCalendarIds,
@@ -57,6 +59,13 @@ type KeywordValues = {
   familyKeywords: string;
 };
 
+type SetupDraft = {
+  roles: CalendarRoleMap;
+  scheduleCalendars: string[];
+  menuBarCalendars: string[];
+  keywordText: KeywordValues;
+};
+
 interface Preferences {
   calendarSelectionMode: CalendarSelectionMode;
 }
@@ -64,6 +73,19 @@ interface Preferences {
 type Props = {
   onComplete?: () => void | Promise<void>;
 };
+
+const EMPTY_KEYWORD_TEXT: KeywordValues = {
+  personalKeywords: "",
+  workKeywords: "",
+  sharedKeywords: "",
+  familyKeywords: "",
+};
+
+function debugSetup(label: string, payload: unknown): void {
+  if (environment.isDevelopment) {
+    console.info(`[CalFlow setup] ${label}`, payload);
+  }
+}
 
 function roleMapFromValues(values: RoleValues): CalendarRoleMap {
   return {
@@ -76,6 +98,68 @@ function roleMapFromValues(values: RoleValues): CalendarRoleMap {
       ? { family: values.familyCalendar }
       : {}),
   };
+}
+
+function keywordTextFromMap(keywords: RoutingKeywordMap): KeywordValues {
+  return {
+    personalKeywords: formatKeywordList(keywords.personal),
+    workKeywords: formatKeywordList(keywords.work),
+    sharedKeywords: formatKeywordList(keywords.shared),
+    familyKeywords: formatKeywordList(keywords.family),
+  };
+}
+
+function keywordMapFromValues(values: KeywordValues): RoutingKeywordMap {
+  return {
+    personal: parseKeywordList(values.personalKeywords),
+    work: parseKeywordList(values.workKeywords),
+    shared: parseKeywordList(values.sharedKeywords),
+    family: parseKeywordList(values.familyKeywords),
+  };
+}
+
+function validatedCalendarIds(value: unknown, label: string): string[] {
+  if (!Array.isArray(value) || !value.every((item) => typeof item === "string")) {
+    throw new Error(`${label} calendar selection was not submitted correctly.`);
+  }
+  return [...value];
+}
+
+function validatedKeywordValues(values: Partial<KeywordValues>): KeywordValues {
+  const entries = Object.entries(EMPTY_KEYWORD_TEXT) as Array<
+    [keyof KeywordValues, string]
+  >;
+  for (const [key] of entries) {
+    if (typeof values[key] !== "string") {
+      throw new Error("A routing keyword field was not submitted correctly.");
+    }
+  }
+  return values as KeywordValues;
+}
+
+function sameStringArrays(a: string[] | null, b: string[]): boolean {
+  if (!a) return false;
+  return JSON.stringify([...a].sort()) === JSON.stringify([...b].sort());
+}
+
+function sameRoleMap(a: CalendarRoleMap, b: CalendarRoleMap): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function normalisedKeywordMap(map: RoutingKeywordMap): RoutingKeywordMap {
+  const result: RoutingKeywordMap = {};
+  for (const role of ["personal", "work", "shared", "family"] as const) {
+    const values = map[role] || [];
+    if (values.length) result[role] = [...values];
+  }
+  return result;
+}
+
+function sameKeywordMap(a: RoutingKeywordMap, b: RoutingKeywordMap): boolean {
+  return (
+    JSON.stringify(normalisedKeywordMap(a)) ===
+    JSON.stringify(normalisedKeywordMap(b))
+  );
 }
 
 function selectionModeLabel(mode: CalendarSelectionMode): string {
@@ -108,41 +192,62 @@ export function CalendarSetupView({ onComplete }: Props) {
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [calendars, setCalendars] = useState<GoogleCalendarEntry[]>([]);
-  const [roles, setRoles] = useState<CalendarRoleMap>({});
-  const [keywords, setKeywords] = useState<RoutingKeywordMap>({});
-  const [scheduleCalendars, setScheduleCalendars] = useState<string[]>([]);
-  const [menuBarCalendars, setMenuBarCalendars] = useState<string[]>([]);
+  const [draft, setDraft] = useState<SetupDraft>({
+    roles: {},
+    scheduleCalendars: [],
+    menuBarCalendars: [],
+    keywordText: EMPTY_KEYWORD_TEXT,
+  });
 
   const load = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const [allCalendars, savedRoles, savedKeywords, existingScheduleEnabled, existingMenuBarEnabled] =
-        await Promise.all([
-          listCalendars(),
-          getCalendarRoles(),
-          getRoutingKeywords(),
-          getScheduleEnabledCalendarIds(),
-          getMenuBarEnabledCalendarIds(),
-        ]);
+      const [
+        allCalendars,
+        savedRoles,
+        savedKeywords,
+        existingScheduleEnabled,
+        existingMenuBarEnabled,
+      ] = await Promise.all([
+        listCalendars(),
+        getCalendarRoles(),
+        getRoutingKeywords(),
+        getScheduleEnabledCalendarIds(),
+        getMenuBarEnabledCalendarIds(),
+      ]);
 
       const readableCalendars = allCalendars.filter(
         (calendar) => calendar.accessRole !== "none",
       );
       const writableCalendars = readableCalendars.filter(isWritable);
       const visibleCalendarIds = googleVisibleCalendarIds(readableCalendars);
-
-      setCalendars(readableCalendars);
-      setRoles(
-        Object.keys(savedRoles).length
+      const loadedDraft: SetupDraft = {
+        roles: Object.keys(savedRoles).length
           ? savedRoles
           : defaultRoleSelections(writableCalendars),
-      );
-      setKeywords(savedKeywords);
-      setScheduleCalendars(existingScheduleEnabled ?? visibleCalendarIds);
-      setMenuBarCalendars(existingMenuBarEnabled ?? visibleCalendarIds);
+        scheduleCalendars: existingScheduleEnabled ?? visibleCalendarIds,
+        menuBarCalendars: existingMenuBarEnabled ?? visibleCalendarIds,
+        keywordText: keywordTextFromMap(savedKeywords),
+      };
+
+      setCalendars(readableCalendars);
+      setDraft(loadedDraft);
       setStep(1);
+
+      debugSetup("loaded draft", {
+        scope: await getCalendarSettingsDebugScope(),
+        roles: loadedDraft.roles,
+        scheduleCalendars: loadedDraft.scheduleCalendars,
+        menuBarCalendars: loadedDraft.menuBarCalendars,
+        keywordFields: Object.fromEntries(
+          Object.entries(loadedDraft.keywordText).map(([key, value]) => [
+            key,
+            { type: typeof value, length: value.length },
+          ]),
+        ),
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -176,6 +281,22 @@ export function CalendarSetupView({ onComplete }: Props) {
   );
 
   async function continueFromRoles(values: RoleValues) {
+    debugSetup("step 1 submit", {
+      fields: Object.fromEntries(
+        Object.entries(values || {}).map(([key, value]) => [key, typeof value]),
+      ),
+      draftRoles: draft.roles,
+    });
+
+    if (!values || typeof values.personalCalendar !== "string") {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Could not read calendar roles",
+        message: "Please try Continue again. Your current choices were kept.",
+      });
+      return;
+    }
+
     if (values.personalCalendar === NONE) {
       await showToast({
         style: Toast.Style.Failure,
@@ -185,18 +306,50 @@ export function CalendarSetupView({ onComplete }: Props) {
       return;
     }
 
-    setRoles(roleMapFromValues(values));
+    const nextRoles = roleMapFromValues(values);
+    setDraft((current) => ({ ...current, roles: nextRoles }));
     setStep(2);
   }
 
-  function continueFromVisibility(values: VisibilityValues) {
-    setScheduleCalendars(values.scheduleCalendars);
-    setMenuBarCalendars(values.menuBarCalendars);
-    setStep(3);
+  async function continueFromVisibility(values: VisibilityValues) {
+    debugSetup("step 2 submit", {
+      fields: Object.fromEntries(
+        Object.entries(values || {}).map(([key, value]) => [
+          key,
+          Array.isArray(value) ? `array:${value.length}` : typeof value,
+        ]),
+      ),
+      draftScheduleCalendars: draft.scheduleCalendars,
+      draftMenuBarCalendars: draft.menuBarCalendars,
+    });
+
+    try {
+      const scheduleCalendars = validatedCalendarIds(
+        values?.scheduleCalendars,
+        "Schedule",
+      );
+      const menuBarCalendars = validatedCalendarIds(
+        values?.menuBarCalendars,
+        "Menu Bar",
+      );
+
+      setDraft((current) => ({
+        ...current,
+        scheduleCalendars,
+        menuBarCalendars,
+      }));
+      setStep(3);
+    } catch (err) {
+      await showToast({
+        style: Toast.Style.Failure,
+        title: "Could not read calendar selections",
+        message: err instanceof Error ? err.message : String(err),
+      });
+    }
   }
 
   async function save(values: KeywordValues) {
-    const personalCalendar = roles.personal;
+    const personalCalendar = draft.roles.personal;
     if (!personalCalendar) {
       setStep(1);
       await showToast({
@@ -206,23 +359,69 @@ export function CalendarSetupView({ onComplete }: Props) {
       return;
     }
 
-    const keywordMap: RoutingKeywordMap = {
-      personal: parseKeywordList(values.personalKeywords),
-      work: parseKeywordList(values.workKeywords),
-      shared: parseKeywordList(values.sharedKeywords),
-      family: parseKeywordList(values.familyKeywords),
-    };
-
     setIsSaving(true);
     try {
+      const submittedKeywordText = validatedKeywordValues(values || {});
+      const finalDraft: SetupDraft = {
+        ...draft,
+        keywordText: submittedKeywordText,
+      };
+      const keywordMap = keywordMapFromValues(finalDraft.keywordText);
+      const scope = await getCalendarSettingsDebugScope();
+
+      debugSetup("save payload", {
+        scope,
+        roles: finalDraft.roles,
+        scheduleCalendars: finalDraft.scheduleCalendars,
+        menuBarCalendars: finalDraft.menuBarCalendars,
+        keywordFields: Object.fromEntries(
+          Object.entries(finalDraft.keywordText).map(([key, value]) => [
+            key,
+            { type: typeof value, length: value.length },
+          ]),
+        ),
+      });
+
       await Promise.all([
-        setCalendarRoles(roles),
+        setCalendarRoles(finalDraft.roles),
         setRoutingKeywords(keywordMap),
-        setScheduleEnabledCalendarIds(scheduleCalendars),
-        setMenuBarEnabledCalendarIds(menuBarCalendars),
+        setScheduleEnabledCalendarIds(finalDraft.scheduleCalendars),
+        setMenuBarEnabledCalendarIds(finalDraft.menuBarCalendars),
       ]);
 
-      setKeywords(keywordMap);
+      const [savedRoles, savedKeywords, savedSchedule, savedMenuBar] =
+        await Promise.all([
+          getCalendarRoles(),
+          getRoutingKeywords(),
+          getScheduleEnabledCalendarIds(),
+          getMenuBarEnabledCalendarIds(),
+        ]);
+
+      debugSetup("save read-back", {
+        scope,
+        roles: savedRoles,
+        scheduleCalendars: savedSchedule,
+        menuBarCalendars: savedMenuBar,
+        keywordCounts: Object.fromEntries(
+          Object.entries(savedKeywords).map(([key, list]) => [
+            key,
+            Array.isArray(list) ? list.length : 0,
+          ]),
+        ),
+      });
+
+      if (
+        !sameRoleMap(savedRoles, finalDraft.roles) ||
+        !sameStringArrays(savedSchedule, finalDraft.scheduleCalendars) ||
+        !sameStringArrays(savedMenuBar, finalDraft.menuBarCalendars) ||
+        !sameKeywordMap(savedKeywords, keywordMap)
+      ) {
+        throw new Error(
+          "Calendar setup could not be verified after saving. Your previous setup-complete state was left unchanged.",
+        );
+      }
+
+      setDraft(finalDraft);
       await markCalendarSetupComplete();
       void refreshMenuBar();
 
@@ -308,11 +507,14 @@ export function CalendarSetupView({ onComplete }: Props) {
         <Form.Dropdown
           id="personalCalendar"
           title="Personal"
-          value={roles.personal || NONE}
+          value={draft.roles.personal || NONE}
           onChange={(value) =>
-            setRoles((current) => ({
+            setDraft((current) => ({
               ...current,
-              personal: value === NONE ? undefined : value,
+              roles: {
+                ...current.roles,
+                personal: value === NONE ? undefined : value,
+              },
             }))
           }
         >
@@ -337,11 +539,14 @@ export function CalendarSetupView({ onComplete }: Props) {
         <Form.Dropdown
           id="workCalendar"
           title="Work"
-          value={roles.work || NONE}
+          value={draft.roles.work || NONE}
           onChange={(value) =>
-            setRoles((current) => ({
+            setDraft((current) => ({
               ...current,
-              work: value === NONE ? undefined : value,
+              roles: {
+                ...current.roles,
+                work: value === NONE ? undefined : value,
+              },
             }))
           }
         >
@@ -366,11 +571,14 @@ export function CalendarSetupView({ onComplete }: Props) {
         <Form.Dropdown
           id="sharedCalendar"
           title="Shared / Partner"
-          value={roles.shared || NONE}
+          value={draft.roles.shared || NONE}
           onChange={(value) =>
-            setRoles((current) => ({
+            setDraft((current) => ({
               ...current,
-              shared: value === NONE ? undefined : value,
+              roles: {
+                ...current.roles,
+                shared: value === NONE ? undefined : value,
+              },
             }))
           }
         >
@@ -395,11 +603,14 @@ export function CalendarSetupView({ onComplete }: Props) {
         <Form.Dropdown
           id="familyCalendar"
           title="Family"
-          value={roles.family || NONE}
+          value={draft.roles.family || NONE}
           onChange={(value) =>
-            setRoles((current) => ({
+            setDraft((current) => ({
               ...current,
-              family: value === NONE ? undefined : value,
+              roles: {
+                ...current.roles,
+                family: value === NONE ? undefined : value,
+              },
             }))
           }
         >
@@ -458,8 +669,13 @@ export function CalendarSetupView({ onComplete }: Props) {
           id="scheduleCalendars"
           title="Schedule Calendars"
           placeholder="Choose calendars for Schedule"
-          value={scheduleCalendars}
-          onChange={setScheduleCalendars}
+          value={draft.scheduleCalendars}
+          onChange={(value) =>
+            setDraft((current) => ({
+              ...current,
+              scheduleCalendars: value,
+            }))
+          }
         >
           {readableCalendars.map((calendar) => (
             <Form.TagPicker.Item
@@ -478,8 +694,13 @@ export function CalendarSetupView({ onComplete }: Props) {
           id="menuBarCalendars"
           title="Menu Bar Calendars"
           placeholder="Choose calendars for the Menu Bar"
-          value={menuBarCalendars}
-          onChange={setMenuBarCalendars}
+          value={draft.menuBarCalendars}
+          onChange={(value) =>
+            setDraft((current) => ({
+              ...current,
+              menuBarCalendars: value,
+            }))
+          }
         >
           {readableCalendars.map((calendar) => (
             <Form.TagPicker.Item
@@ -530,25 +751,49 @@ export function CalendarSetupView({ onComplete }: Props) {
       <Form.TextField
         id="personalKeywords"
         title="Personal Keywords"
-        defaultValue={formatKeywordList(keywords.personal)}
+        value={draft.keywordText.personalKeywords}
+        onChange={(value) =>
+          setDraft((current) => ({
+            ...current,
+            keywordText: { ...current.keywordText, personalKeywords: value },
+          }))
+        }
         placeholder="e.g. Study"
       />
       <Form.TextField
         id="workKeywords"
         title="Work Keywords"
-        defaultValue={formatKeywordList(keywords.work)}
+        value={draft.keywordText.workKeywords}
+        onChange={(value) =>
+          setDraft((current) => ({
+            ...current,
+            keywordText: { ...current.keywordText, workKeywords: value },
+          }))
+        }
         placeholder="e.g. Acme, project codename"
       />
       <Form.TextField
         id="sharedKeywords"
         title="Shared Keywords"
-        defaultValue={formatKeywordList(keywords.shared)}
+        value={draft.keywordText.sharedKeywords}
+        onChange={(value) =>
+          setDraft((current) => ({
+            ...current,
+            keywordText: { ...current.keywordText, sharedKeywords: value },
+          }))
+        }
         placeholder="e.g. partner's name"
       />
       <Form.TextField
         id="familyKeywords"
         title="Family Keywords"
-        defaultValue={formatKeywordList(keywords.family)}
+        value={draft.keywordText.familyKeywords}
+        onChange={(value) =>
+          setDraft((current) => ({
+            ...current,
+            keywordText: { ...current.keywordText, familyKeywords: value },
+          }))
+        }
         placeholder="e.g. family surname"
       />
 
