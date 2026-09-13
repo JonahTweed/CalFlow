@@ -147,6 +147,20 @@ async function scopedStorageKey(baseKey: string): Promise<string> {
   return `${baseKey}.account.${await resolveConnectedAccountScope()}`;
 }
 
+function normaliseCalendarIds(ids: unknown, label: string): string[] {
+  if (!Array.isArray(ids)) {
+    throw new Error(`${label} calendar selection was missing.`);
+  }
+
+  if (!ids.every((value) => typeof value === "string")) {
+    throw new Error(`${label} calendar selection was invalid.`);
+  }
+
+  return Array.from(
+    new Set(ids.map((value) => value.trim()).filter(Boolean)),
+  );
+}
+
 function looksLikeEmailAddress(value: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
@@ -200,9 +214,9 @@ export async function getScheduleEnabledCalendarIds(): Promise<
 }
 
 export async function setScheduleEnabledCalendarIds(
-  ids: string[],
+  ids: unknown,
 ): Promise<void> {
-  const unique = Array.from(new Set(ids));
+  const unique = normaliseCalendarIds(ids, "Schedule");
   await writeJson(
     await scopedStorageKey(STORAGE.scheduleEnabledCalendarIds),
     unique,
@@ -216,9 +230,9 @@ export async function getMenuBarEnabledCalendarIds(): Promise<string[] | null> {
 }
 
 export async function setMenuBarEnabledCalendarIds(
-  ids: string[],
+  ids: unknown,
 ): Promise<void> {
-  const unique = Array.from(new Set(ids));
+  const unique = normaliseCalendarIds(ids, "Menu Bar");
   await writeJson(
     await scopedStorageKey(STORAGE.menuBarEnabledCalendarIds),
     unique,
@@ -314,8 +328,12 @@ export async function resetCalendarSetup(): Promise<void> {
   ]);
 }
 
-export function parseKeywordList(value: string): string[] {
-  return String(value || "")
+export function parseKeywordList(value: unknown): string[] {
+  if (typeof value !== "string") {
+    throw new Error("Routing keyword field was missing.");
+  }
+
+  return value
     .split(/[,\n]/)
     .map((item) => item.trim())
     .filter(Boolean);
@@ -323,6 +341,10 @@ export function parseKeywordList(value: string): string[] {
 
 export function formatKeywordList(values: string[] | undefined): string {
   return (values || []).join(", ");
+}
+
+export async function getCalendarSettingsDebugScope(): Promise<string> {
+  return resolveConnectedAccountScope();
 }
 
 function findWritableByName(
