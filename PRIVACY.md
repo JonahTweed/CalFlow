@@ -37,7 +37,7 @@ Calendar API requests are made directly from the Raycast extension to the Google
 
 CalFlow does not proxy those requests through a CalFlow-owned server.
 
-When you explicitly choose actions such as **Open Event**, **Open Location**, or **Join Meeting**, CalFlow may open the relevant Google Calendar, maps, conferencing, or other event-provided URL in the app or browser you selected. Those destinations then operate under their own privacy policies.
+When you explicitly choose **Open Event**, **Open in Google Calendar**, or **Open Calendar**, CalFlow opens the Google Calendar event or calendar link in your default browser for the connected Google account. Actions such as **Open Location** or **Join Meeting** may open the relevant maps, conferencing, or other event-provided URL using the system default handler. Those destinations then operate under their own privacy policies.
 
 ## Local storage on your Mac
 

@@ -48,9 +48,8 @@ Raycast will load the local extension.
 Open **Schedule**. On first use:
 
 1. sign in to Google through Raycast;
-2. choose the app CalFlow should use when opening Google Calendar links;
-3. complete the three-step calendar setup;
-4. choose which calendars appear in Schedule and the Menu Bar.
+2. complete the three-step calendar setup;
+3. choose which calendars appear in Schedule and the Menu Bar.
 
 If Google sign-in is blocked during the beta, please report it through GitHub Issues. OAuth tester access may be limited while the public OAuth configuration is being finalised.
 
@@ -101,9 +100,9 @@ CalFlow supports UK (`DD/MM/YYYY`) and US (`MM/DD/YYYY`) date modes from Calenda
 
 ## Opening events and calendars
 
-Open Event / Open in Google Calendar uses your default browser from Schedule, Next Up, Edit Event, Event Actions, and the menu bar. Links retain Google's event target and identify the connected Google account, including secondary accounts. Sign in to that account in your browser if prompted.
+**Open Event / Open in Google Calendar** opens the exact event in your default browser for the connected Google account, including secondary accounts, from Schedule, Next Up, Edit Event, Event Actions, and the menu bar. Sign in to that account in your browser if prompted. If Google supplies no event link, the existing fallback opens the event day rather than a specific event.
 
-**Open Calendar** in the menu bar also uses your default browser, opening the calendar view for the currently connected Google account. It resolves the account when clicked, even if no events are visible. If Google supplies no event link, the existing fallback opens the event day rather than a specific event.
+**Open Calendar** in the menu bar also uses your default browser, opening the calendar view for the currently connected Google account. It resolves the account when clicked, even if no events are visible.
 
 ## Event permissions
 
@@ -144,7 +143,7 @@ npm test
 npx tsc --noEmit
 ```
 
-The current regression suite covers parsing, routing, refresh wiring, onboarding, and Smart Status behavior.
+The `npm test` suite covers parsing, calendar routing, refresh wiring, onboarding and setup persistence, Smart Status, menu-row compaction/truncation, and event-opening regressions. Event-opening coverage checks account-aware event and calendar-view URLs, default-browser routing, and account lookup failures.
 
 A **Refresh Diagnostics — Development** command also performs a non-destructive live check of the real Raycast menu-bar refresh pipeline.
 
