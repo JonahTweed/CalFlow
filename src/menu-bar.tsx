@@ -1,5 +1,6 @@
 import { withAccessToken } from "@raycast/utils";
 import { googleOAuth } from "./lib/google-oauth";
+import { menuBarSessionRevision, subscribeMenuBarSession } from "./lib/menu-bar-session";
 import { transferModeFor } from "./event-actions";
 import {
   Cache,
@@ -80,6 +81,7 @@ const menuBarCache = new Cache({ namespace: "calendar-shortcuts-menu-bar" });
 
 type MenuBarLaunchContext = {
   refreshMode?: "display" | "full";
+  sessionRevision?: string;
   displaySettings?: MenuBarDisplaySettings;
 };
 
@@ -587,6 +589,11 @@ async function launchEventAction(
 function Command(
   props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>,
 ) {
+  const sessionRevision = useRef(menuBarSessionRevision()).current;
+  const sessionIsCurrent = useCallback(
+    () => menuBarSessionRevision() === sessionRevision,
+    [sessionRevision],
+  );
   const preferences = getPreferenceValues<Preferences>();
   const displayOnlyRefresh =
     environment.launchType === LaunchType.Background &&
@@ -644,6 +651,7 @@ function Command(
   }, []);
 
   const reload = useCallback(async () => {
+    if (!sessionIsCurrent()) return;
     const latestPreferences = getPreferenceValues<Preferences>();
     setMenuBarHeadlineStyle(
       latestPreferences.menuBarHeadlineStyle ?? "smart",
@@ -654,6 +662,7 @@ function Command(
     // component, so every explicit/background refresh re-reads the runtime
     // menu settings before rendering.
     await syncMenuBarRuntimeSettings();
+    if (!sessionIsCurrent()) return;
 
     if (latestPreferences.menuBarMode === "never") return;
 
@@ -663,6 +672,7 @@ function Command(
 
     try {
       const complete = await isCalendarSetupComplete();
+      if (!sessionIsCurrent()) return;
       setSetupComplete(complete);
       if (!complete) {
         setEvents([]);
@@ -679,6 +689,7 @@ function Command(
           ? await getMenuBarEnabledCalendarIds()
           : null;
 
+      if (!sessionIsCurrent()) return;
       const data = await loadSchedule({
         // Keep a generous warm event cache so changing Events Shown is purely a
         // display operation. The menu still renders only the configured row count.
@@ -690,6 +701,7 @@ function Command(
         enabledCalendarIds,
       });
 
+      if (!sessionIsCurrent()) return;
       const freshEvents = data.events.filter((item) =>
         isUpcomingEvent(item, Date.now()),
       );
@@ -700,11 +712,11 @@ function Command(
         events: freshEvents,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
+      if (sessionIsCurrent()) setError(err instanceof Error ? err.message : String(err));
     } finally {
-      setIsLoading(false);
+      if (sessionIsCurrent()) setIsLoading(false);
     }
-  }, [syncMenuBarRuntimeSettings]);
+  }, [syncMenuBarRuntimeSettings, sessionIsCurrent]);
 
   useEffect(() => {
     if (preferences.menuBarMode === "never") {
@@ -769,6 +781,7 @@ function Command(
     // retry without repeated automatic launches or a polling worker.
     setupRedirectStartedRef.current = true;
     void isCalendarSetupComplete().then(async (complete) => {
+      if (!sessionIsCurrent()) return;
       setSetupComplete(complete);
       if (complete) return;
       await launchCommand({
@@ -778,7 +791,7 @@ function Command(
     }).catch((err) => {
       setError(err instanceof Error ? err.message : String(err));
     });
-  }, [setupComplete]);
+  }, [setupComplete, sessionIsCurrent]);
 
   const toggleMeetingFilter = useCallback(async () => {
     const next = !menuBarOnlyMeetings;
@@ -1145,4 +1158,58 @@ function Command(
   );
 }
 
-export default withAccessToken(googleOAuth)(Command);
+const AuthenticatedMenuBar = withAccessToken(googleOAuth)(Command);
+
+function SignedOutMenuBar({ isLoading = false }: { isLoading?: boolean } = {}) {
+  return (
+    <MenuBarExtra icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }} tooltip="DayCal" isLoading={isLoading}>
+      <MenuBarExtra.Section title="DayCal">
+        <MenuBarExtra.Item
+          title="Set Up Calendars"
+          subtitle="Connect Google Calendar to get started"
+          icon={{ source: Icon.Gear, tintColor: Color.PrimaryText }}
+          onAction={() => launchCommand({ name: "set-up-calendars", type: LaunchType.UserInitiated })}
+        />
+      </MenuBarExtra.Section>
+    </MenuBarExtra>
+  );
+}
+
+// Token presence is checked without authorizing. Only the authenticated child
+// uses withAccessToken (including its normal token refresh behavior).
+export default function MenuBarShell(props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>) {
+  const [isCheckingConnection, setIsCheckingConnection] = useState(true);
+  const [connection, setConnection] = useState<{
+    revision: string;
+    context: typeof props.launchContext;
+  } | null>(null);
+
+  useEffect(() => {
+    let disposed = false;
+    let check = 0;
+    const checkConnection = async () => {
+      const attempt = ++check;
+      const revision = menuBarSessionRevision();
+      setIsCheckingConnection(true);
+      setConnection(null); // Unmount the authenticated tree and its event state.
+      try {
+        const tokens = await googleOAuth.client.getTokens();
+        if (!disposed && attempt === check && revision === menuBarSessionRevision()) {
+          setConnection(tokens?.accessToken ? { revision, context: props.launchContext } : null);
+        }
+      } catch {
+        // Missing/unreadable credentials must not expose a cached schedule.
+      } finally {
+        if (!disposed && attempt === check) setIsCheckingConnection(false);
+      }
+    };
+    const unsubscribe = subscribeMenuBarSession(() => { void checkConnection(); });
+    void checkConnection();
+    return () => { disposed = true; unsubscribe(); };
+  }, [props.launchContext]);
+
+  if (!connection || connection.context !== props.launchContext || connection.revision !== menuBarSessionRevision()) {
+    return <SignedOutMenuBar isLoading={isCheckingConnection} />;
+  }
+  return <AuthenticatedMenuBar key={connection.revision} {...props} />;
+}

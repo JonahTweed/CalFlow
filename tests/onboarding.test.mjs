@@ -262,6 +262,7 @@ if (redirectEffects.length === 1) {
       LaunchType: { UserInitiated: "userInitiated", Background: "background" },
       setupComplete: scenario.cached,
       setupRedirectStartedRef: { current: false },
+      sessionIsCurrent: () => true,
       isCalendarSetupComplete: async () => {
         reads++;
         if (scenario.failRead) throw new Error("Lookup failed");

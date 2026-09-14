@@ -1,6 +1,5 @@
 import {
   Alert,
-  Cache,
   Toast,
   confirmAlert,
   showHUD,
@@ -8,12 +7,12 @@ import {
 } from "@raycast/api";
 import { googleOAuth } from "./lib/google-oauth";
 
-const menuBarCache = new Cache({ namespace: "calendar-shortcuts-menu-bar" });
+import { invalidateMenuBarSession } from "./lib/menu-bar-session";
 
 export default async function Command() {
   const tokens = await googleOAuth.client.getTokens();
   if (!tokens?.accessToken) {
-    menuBarCache.clear();
+    await invalidateMenuBarSession();
     await showHUD("Google Calendar is already disconnected");
     return;
   }
@@ -32,7 +31,7 @@ export default async function Command() {
 
   try {
     await googleOAuth.client.removeTokens();
-    menuBarCache.clear();
+    await invalidateMenuBarSession();
     await showHUD("🔒 Google Calendar disconnected · settings kept");
   } catch (error) {
     await showToast({
