@@ -66,15 +66,14 @@ DayCal does not log or intentionally transmit OAuth tokens to the developer.
 
 ## Disconnecting and revoking access
 
-The **Disconnect Google Calendar** command:
+The **Disconnect Google Account** command removes DayCal's locally stored Google OAuth tokens through Raycast and clears DayCal's local Menu Bar event cache. Before disconnecting, you choose what happens to the connected account's saved DayCal calendar setup:
 
-- removes DayCal's locally stored Google OAuth tokens through Raycast;
-- clears DayCal's local Menu Bar event cache;
-- intentionally keeps Raycast preferences, calendar selections, role mappings, and routing keywords so they are available if you reconnect later.
+- **Keep DayCal Settings** preserves that account's calendar selections, role mappings, routing keywords, and setup-complete state so they are available if the same Google account reconnects later.
+- **Delete DayCal Settings** deletes that account's locally saved calendar selections, role mappings, routing keywords, and setup-complete state so reconnecting behaves like a fresh DayCal setup. This does not delete any Google Calendar events.
+
+Extension-wide Raycast preferences are not account-specific and are not deleted by either disconnect option.
 
 Disconnecting inside DayCal does **not** revoke the app's authorization in your Google Account. You can separately revoke Google access from your Google Account's third-party access/security settings.
-
-A dedicated one-step command for clearing all remaining DayCal local configuration is planned before the full public release. Until then, DayCal is transparent that Disconnect preserves those settings rather than silently deleting them.
 
 ## Analytics, advertising, and tracking
 

@@ -119,6 +119,17 @@ check(
   "Finish Setup reads the account-scoped payload back and only marks setup complete after verification succeeds.",
 );
 
+const keywordNormaliser = setup.slice(
+  setup.indexOf("function normalisedKeywordMap"),
+  setup.indexOf("function sameKeywordMap"),
+);
+check(
+  "Setup verification matches persisted keyword normalisation",
+  keywordNormaliser.includes("value.trim().toLowerCase()") &&
+    keywordNormaliser.includes("new Set("),
+  "Capitalised or duplicate routing keywords compare against the lowercase deduplicated form written to storage, so a first save such as ‘Jonah’ does not fail verification.",
+);
+
 check(
   "Development diagnostics exclude credentials and calendar contents",
   setup.includes("environment.isDevelopment") &&

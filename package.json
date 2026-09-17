@@ -22,7 +22,7 @@
     {
       "name": "schedule",
       "title": "Schedule",
-      "subtitle": "Google Calendar",
+      "subtitle": "DayCal",
       "description": "View and manage your Google Calendar schedule directly in Raycast.",
       "mode": "view"
     },
@@ -50,7 +50,7 @@
     {
       "name": "add-personal-event",
       "title": "Add Personal Event",
-      "subtitle": "Google Calendar",
+      "subtitle": "DayCal",
       "description": "Add an event to Personal with smart timed/all-day parsing and calendar checking.",
       "mode": "view",
       "arguments": [
@@ -77,7 +77,7 @@
     {
       "name": "add-shared-event",
       "title": "Add Shared Event",
-      "subtitle": "Google Calendar",
+      "subtitle": "DayCal",
       "description": "Add an event to your Shared / Partner calendar with smart timed/all-day parsing and calendar checking.",
       "mode": "view",
       "arguments": [
@@ -104,7 +104,7 @@
     {
       "name": "add-work-event",
       "title": "Add Work Event",
-      "subtitle": "Google Calendar",
+      "subtitle": "DayCal",
       "description": "Add an event to Work with smart timed/all-day parsing and calendar checking.",
       "mode": "view",
       "arguments": [
@@ -159,10 +159,10 @@
     },
     {
       "name": "disconnect-google",
-      "title": "Disconnect Google Calendar",
+      "title": "Disconnect Google Account",
       "subtitle": "DayCal",
-      "description": "Sign DayCal out of the connected Google account while keeping DayCal settings.",
-      "mode": "no-view"
+      "description": "Disconnect Google Calendar and choose whether to keep or delete this account’s saved DayCal setup.",
+      "mode": "view"
     },
     {
       "name": "test-quick-add-parsing",
@@ -306,11 +306,12 @@
     "dev": "ray develop",
     "build": "ray build",
     "lint": "ray lint",
+    "test:edit": "node --test tests/edit-event.test.mjs",
     "test:disconnect": "node --test tests/disconnect.test.mjs",
     "test:branding": "node --test tests/branding.test.mjs",
     "test:parser": "tsx tests/parser.test.ts",
     "test:routing": "tsx tests/routing.test.ts",
-    "test": "npm run test:parser && npm run test:routing && npm run test:refresh && npm run test:onboarding && npm run test:smart-status && npm run test:menu-row && npm run test:event-opening && npm run test:branding && npm run test:disconnect",
+    "test": "npm run test:parser && npm run test:routing && npm run test:refresh && npm run test:onboarding && npm run test:smart-status && npm run test:menu-row && npm run test:event-opening && npm run test:branding && npm run test:disconnect && npm run test:edit",
     "test:refresh": "node tests/refresh.test.mjs",
     "test:onboarding": "node tests/onboarding.test.mjs",
     "test:smart-status": "node tests/smart-status.test.mjs",

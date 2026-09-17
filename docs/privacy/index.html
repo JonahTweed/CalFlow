@@ -175,28 +175,33 @@
       <h2 id="disconnecting-and-revoking-access">
         Disconnecting and revoking access
       </h2>
-      <p>The <strong>Disconnect Google Calendar</strong> command:</p>
+      <p>
+        The <strong>Disconnect Google Account</strong> command removes DayCal's
+        locally stored Google OAuth tokens through Raycast and clears DayCal's
+        local Menu Bar event cache. Before disconnecting, you choose what
+        happens to the connected account's saved DayCal calendar setup:
+      </p>
       <ul>
         <li>
-          removes DayCal's locally stored Google OAuth tokens through Raycast;
+          <strong>Keep DayCal Settings</strong> preserves that account's calendar
+          selections, role mappings, routing keywords, and setup-complete state
+          so they are available if the same Google account reconnects later.
         </li>
-        <li>clears DayCal's local Menu Bar event cache;</li>
         <li>
-          intentionally keeps Raycast preferences, calendar selections, role
-          mappings, and routing keywords so they are available if you reconnect
-          later.
+          <strong>Delete DayCal Settings</strong> deletes that account's locally
+          saved calendar selections, role mappings, routing keywords, and
+          setup-complete state so reconnecting behaves like a fresh DayCal
+          setup. This does not delete any Google Calendar events.
         </li>
       </ul>
+      <p>
+        Extension-wide Raycast preferences are not account-specific and are not
+        deleted by either disconnect option.
+      </p>
       <p>
         Disconnecting inside DayCal does <strong>not</strong> revoke the app's
         authorization in your Google Account. You can separately revoke Google
         access from your Google Account's third-party access/security settings.
-      </p>
-      <p>
-        A dedicated one-step command for clearing all remaining DayCal local
-        configuration is planned before the full public release. Until then,
-        DayCal is transparent that Disconnect preserves those settings rather
-        than silently deleting them.
       </p>
       <h2 id="analytics-advertising-and-tracking">
         Analytics, advertising, and tracking

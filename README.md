@@ -70,7 +70,7 @@ If Google sign-in is blocked during the beta, please report it through GitHub Is
 | **Add Work Event** | Quick Add to the Work role |
 | **Add Shared Event** | Quick Add to the Shared / Partner role |
 | **Check Google Calendar Connection** | Verify Google Calendar access |
-| **Disconnect Google Calendar** | Sign out locally while preserving DayCal settings |
+| **Disconnect Google Account** | Sign out locally and choose whether to keep or delete that account’s saved DayCal setup |
 
 Development builds also include non-destructive diagnostics and parsing/setup replay commands to help beta testing.
 

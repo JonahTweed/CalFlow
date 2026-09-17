@@ -7,7 +7,7 @@ import {
   showToast,
   useNavigation,
 } from "@raycast/api";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { updateEvent } from "./lib/google";
 import { GoogleCalendarEntry, GoogleEvent } from "./lib/types";
 
@@ -84,6 +84,10 @@ function calendarDayNumber(value: Date): number {
 export default function EditEvent({ calendar, event, onSaved }: Props) {
   const { pop } = useNavigation();
   const [saving, setSaving] = useState(false);
+  const savingRef = useRef(false);
+  const [title, setTitle] = useState(event.summary || "");
+  const [location, setLocation] = useState(event.location || "");
+  const [description, setDescription] = useState(event.description || "");
 
   const allDay = Boolean(event.start.date && !event.start.dateTime);
 
@@ -135,6 +139,8 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
   }
 
   async function submit(values: Values) {
+    if (savingRef.current) return;
+    savingRef.current = true;
     try {
       const title = values.title.trim();
       const location = values.location.trim();
@@ -203,6 +209,7 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         message: error instanceof Error ? error.message : String(error),
       });
     } finally {
+      savingRef.current = false;
       setSaving(false);
     }
   }
@@ -213,7 +220,14 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
       navigationTitle={`Edit · ${calendarDisplayName(calendar)}`}
       actions={
         <ActionPanel>
-          <Action.SubmitForm title="Save Event" icon={Icon.Checkmark} onSubmit={submit} />
+          {/* Keep Save independent of the host's form-value collection. Some
+              Raycast versions do not dispatch SubmitForm from this editor. */}
+          <Action
+            title="Save Event"
+            icon={Icon.Checkmark}
+            shortcut={{ modifiers: ["cmd"], key: "return" }}
+            onAction={() => submit({ title, start, end, location, description })}
+          />
           {event.htmlLink ? (
             <Action.OpenInBrowser
               title="Open in Google Calendar"
@@ -223,7 +237,7 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         </ActionPanel>
       }
     >
-      <Form.TextField id="title" title="Title" defaultValue={event.summary || ""} />
+      <Form.TextField id="title" title="Title" value={title} onChange={setTitle} />
       <Form.DatePicker
         id="start"
         title={allDay ? "Start Date" : "Start"}
@@ -239,8 +253,8 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         min={start || undefined}
         type={allDay ? Form.DatePicker.Type.Date : Form.DatePicker.Type.DateTime}
       />
-      <Form.TextField id="location" title="Location" defaultValue={event.location || ""} />
-      <Form.TextArea id="description" title="Description" defaultValue={event.description || ""} />
+      <Form.TextField id="location" title="Location" value={location} onChange={setLocation} />
+      <Form.TextArea id="description" title="Description" value={description} onChange={setDescription} />
     </Form>
   );
 }

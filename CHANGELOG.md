@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Hardened **Disconnect Google Account → Delete DayCal Settings** so it removes both current account-scoped setup data and historical v1 setup keys, verifies the deletion before signing out, and no longer allows old routing keywords such as `jonah` to reappear after reconnecting.
+- Fixed first-save verification for routing keywords by comparing the same trimmed, lowercased, deduplicated form that DayCal persists.
+- Reworked Disconnect Google Account into an explicit keep-or-delete flow. Users can preserve account-scoped DayCal calendar setup for a later reconnect or delete it for a true fresh-account setup; both paths clear stale Menu Bar event state, and neither deletes Google Calendar events or revokes the Google Account grant.
 - Renamed extension display text, manifest branding, icons and current documentation to DayCal. Existing command identifiers, account-scoped storage, OAuth configuration and repository URLs are unchanged.
 - Replaced the website Schedule mockup with a real demo screenshot, added the Menu Bar screenshot, and added a shared enlargement overlay with close, Escape and backdrop dismissal. The Menu Bar capture shows the renamed DayCal interface.
 

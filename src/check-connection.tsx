@@ -95,7 +95,7 @@ function Command() {
     "",
     escapeMarkdown(state.message),
     "",
-    "Try **Check Again**. If the problem persists, use **Disconnect Google Calendar** and sign in again when you next open a DayCal command.",
+    "Try **Check Again**. If the problem persists, use **Disconnect Google Account** and sign in again when you next open a DayCal command.",
   ].join("\n");
 
   return (

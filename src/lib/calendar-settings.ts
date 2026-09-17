@@ -321,24 +321,119 @@ export async function markCalendarSetupComplete(): Promise<void> {
   );
 }
 
-export async function resetCalendarSetup(): Promise<void> {
-  const currentKeys = await Promise.all([
-    scopedStorageKey(STORAGE.scheduleEnabledCalendarIds),
-    scopedStorageKey(STORAGE.menuBarEnabledCalendarIds),
-    scopedStorageKey(STORAGE.calendarRoles),
-    scopedStorageKey(STORAGE.routingKeywords),
-    scopedStorageKey(STORAGE.setupComplete),
-  ]);
+function accountScopedSetupKeys(scope: string): string[] {
+  return [
+    STORAGE.scheduleEnabledCalendarIds,
+    STORAGE.menuBarEnabledCalendarIds,
+    STORAGE.calendarRoles,
+    STORAGE.routingKeywords,
+    STORAGE.setupComplete,
+  ].map((baseKey) => `${baseKey}.account.${scope}`);
+}
 
-  await Promise.all([
-    ...currentKeys.map((key) => LocalStorage.removeItem(key)),
-    LocalStorage.removeItem(STORAGE.legacyEnabledCalendarIds),
-    LocalStorage.removeItem(STORAGE.legacyScheduleEnabledCalendarIds),
-    LocalStorage.removeItem(STORAGE.legacyMenuBarEnabledCalendarIds),
-    LocalStorage.removeItem(STORAGE.legacyCalendarRoles),
-    LocalStorage.removeItem(STORAGE.legacyRoutingKeywords),
-    LocalStorage.removeItem(STORAGE.legacySetupComplete),
-  ]);
+function legacySetupKeys(): string[] {
+  return [
+    STORAGE.legacyEnabledCalendarIds,
+    STORAGE.legacyScheduleEnabledCalendarIds,
+    STORAGE.legacyMenuBarEnabledCalendarIds,
+    STORAGE.legacyCalendarRoles,
+    STORAGE.legacyRoutingKeywords,
+    STORAGE.legacySetupComplete,
+  ];
+}
+
+function presentStorageKeys(
+  items: LocalStorage.Values,
+  keys: string[],
+): string[] {
+  return keys.filter((key) => Object.prototype.hasOwnProperty.call(items, key));
+}
+
+async function purgeStorageKeys(keys: string[]): Promise<void> {
+  const uniqueKeys = Array.from(new Set(keys));
+
+  // LocalStorage writes share one encrypted extension database. Keep each
+  // removal strictly ordered instead of firing a batch of removeItem() calls
+  // concurrently. Removal and verification also stay inside the same queue so
+  // another settings write from this module cannot slip between them.
+  const purge = localStorageWriteQueue.then(async () => {
+    for (const key of uniqueKeys) {
+      await LocalStorage.removeItem(key);
+    }
+
+    let remaining = presentStorageKeys(
+      await LocalStorage.allItems(),
+      uniqueKeys,
+    );
+
+    // If another command instance completed a one-off write at the same moment
+    // as the purge, remove exactly those surviving keys once more. This is a
+    // deterministic retry of known keys, not a timeout-based workaround.
+    if (remaining.length > 0) {
+      for (const key of remaining) {
+        await LocalStorage.removeItem(key);
+      }
+
+      remaining = presentStorageKeys(
+        await LocalStorage.allItems(),
+        uniqueKeys,
+      );
+    }
+
+    if (remaining.length > 0) {
+      // Do not expose account-derived storage keys to the user. The count is
+      // enough to distinguish a genuine LocalStorage cleanup failure from an
+      // OAuth/disconnect problem.
+      throw new Error(
+        `DayCal could not remove ${remaining.length} saved setup item${remaining.length === 1 ? "" : "s"}. Please try again.`,
+      );
+    }
+  });
+
+  localStorageWriteQueue = purge.catch(() => {});
+  await purge;
+}
+
+export async function deleteCurrentAccountCalendarSettings(): Promise<void> {
+  const scope = await resolveConnectedAccountScope();
+  const index = await readJson<AccountScopeIndex>(STORAGE.accountScopeIndex, {});
+  const setupKeys = [
+    ...accountScopedSetupKeys(scope),
+    // Older builds used unscoped v1 keys. Current readers do not normally use
+    // them, but Delete DayCal Settings means delete the account's setup rather
+    // than leave historical routing keywords or selections behind.
+    ...legacySetupKeys(),
+  ];
+
+  // A single Google account can accumulate multiple access-token fingerprints
+  // over time. They all resolve to the same durable primary-calendar scope, so
+  // deleting this account's setup also removes every fingerprint that points to
+  // that scope. No email address or calendar ID is stored in the index.
+  const remainingIndex = Object.fromEntries(
+    Object.entries(index).filter(([, indexedScope]) => indexedScope !== scope),
+  );
+
+  await purgeStorageKeys(setupKeys);
+
+  if (Object.keys(remainingIndex).length > 0) {
+    await writeJson(STORAGE.accountScopeIndex, remainingIndex);
+  } else {
+    await purgeStorageKeys([STORAGE.accountScopeIndex]);
+  }
+
+  // Force a reconnect to resolve the account afresh instead of reusing the
+  // in-memory scope promise from the disconnected session.
+  accountScopeCache = null;
+}
+
+export async function resetCalendarSetup(): Promise<void> {
+  const scope = await resolveConnectedAccountScope();
+  const setupKeys = [
+    ...accountScopedSetupKeys(scope),
+    ...legacySetupKeys(),
+  ];
+
+  await purgeStorageKeys(setupKeys);
 }
 
 export function parseKeywordList(value: unknown): string[] {

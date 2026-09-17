@@ -149,8 +149,14 @@ function sameRoleMap(a: CalendarRoleMap, b: CalendarRoleMap): boolean {
 function normalisedKeywordMap(map: RoutingKeywordMap): RoutingKeywordMap {
   const result: RoutingKeywordMap = {};
   for (const role of ["personal", "work", "shared", "family"] as const) {
-    const values = map[role] || [];
-    if (values.length) result[role] = [...values];
+    const values = Array.from(
+      new Set(
+        (map[role] || [])
+          .map((value) => value.trim().toLowerCase())
+          .filter(Boolean),
+      ),
+    );
+    if (values.length) result[role] = values;
   }
   return result;
 }
