@@ -96,10 +96,11 @@ function calendarSettingsHarness() {
   const storage = new Map();
   let account = { fingerprint: "fp-a", primaryId: "a@example.test" };
   const LocalStorage = {
-    async getItem(key) { return storage.get(key); },
-    async setItem(key, value) { storage.set(key, value); },
-    async removeItem(key) { storage.delete(key); },
-  };
+  async getItem(key) { return storage.get(key); },
+  async setItem(key, value) { storage.set(key, value); },
+  async removeItem(key) { storage.delete(key); },
+  async allItems() { return Object.fromEntries(storage.entries()); },
+};
   const modules = {
     "@raycast/api": { LocalStorage },
     "./google": {
