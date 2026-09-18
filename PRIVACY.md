@@ -1,6 +1,6 @@
 # DayCal Privacy Policy
 
-**Effective date:** 12 September 2026
+**Effective date:** 18 September 2026
 
 DayCal is a Google Calendar extension for Raycast. Privacy and security are core design priorities: DayCal is built to work directly between Raycast on your Mac and Google Calendar, without a DayCal-operated backend service.
 
@@ -122,6 +122,6 @@ If DayCal's data handling changes materially, this policy will be updated before
 
 ## Contact
 
-For privacy questions that do not contain sensitive information, use the DayCal GitHub repository or contact the maintainer through the GitHub profile.
+For privacy questions that do not contain sensitive information, email [support@daycal.co.uk](mailto:support@daycal.co.uk), use the DayCal GitHub repository, or contact the maintainer through the GitHub profile.
 
 For suspected vulnerabilities or anything involving credentials or private calendar data, follow the private reporting guidance in [SECURITY.md](SECURITY.md).

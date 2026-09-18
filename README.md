@@ -12,6 +12,8 @@
 
 **Privacy & security:** [Privacy Policy](PRIVACY.md) · [Security Policy](SECURITY.md)
 
+**Support:** [support@daycal.co.uk](mailto:support@daycal.co.uk)
+
 ## Highlights
 
 - **Schedule** — browse upcoming Google Calendar events without Apple Calendar.
@@ -55,7 +57,7 @@ Open **Schedule** or explicitly launch **Calendar Menu Bar**. On first use:
 
 Automatic/background Menu Bar launches stay quiet when setup is incomplete. The dropdown keeps a **Set Up Calendars** action so you can finish when ready; background refreshes do not open the setup wizard.
 
-If Google sign-in is blocked during the beta, please report it through GitHub Issues. OAuth tester access may be limited while the public OAuth configuration is being finalised.
+If Google sign-in fails during the beta, please report it through GitHub Issues. DayCal’s Google OAuth verification is approved for the requested sensitive Calendar scope, so new users should not see Google’s unverified-app warning.
 
 ## Main commands
 
@@ -136,7 +138,6 @@ DayCal does not use calendar data for advertising, tracking, analytics, data bro
 - Raycast's native DatePicker free-text suggestion parser can reject or inconsistently interpret some abbreviated phrases. DayCal validates Start/End relationships and preserves event duration when Start moves past End, but does not replace Raycast's DatePicker parser.
 - Timed events and all-day events can both be edited in Raycast, but DayCal intentionally does **not** convert timed events into all-day events or vice versa yet.
 - Moving recurring events is not supported; use **Copy to Calendar…** where offered.
-- The public Google OAuth configuration may still require additional verification before a completely open release.
 - DayCal is currently macOS-only.
 
 ## Internal compatibility note
@@ -150,7 +151,7 @@ npm test
 npx tsc --noEmit
 ```
 
-The `npm test` suite covers parsing, calendar routing, refresh wiring, onboarding and setup persistence, Smart Status, menu-row compaction/truncation, and event-opening regressions. Onboarding coverage distinguishes explicit and background Menu Bar launches, completed setup, stale snapshots, and failed redirects. Menu submenu coverage checks Move/Copy placement, recurring and restricted events, existing meeting/location shortcuts, and duplicate Copy suppression. Event-opening coverage checks account-aware event and calendar-view URLs, default-browser routing, and account lookup failures.
+The `npm test` suite covers parsing, calendar routing, refresh wiring, onboarding and setup persistence, Smart Status, menu-row compaction/truncation, event opening, DayCal branding, disconnect/reset behaviour, and Edit Event saving. Onboarding coverage distinguishes explicit and background Menu Bar launches, completed setup, stale snapshots, failed redirects, and routing-keyword normalization. Disconnect coverage checks Keep Settings versus Delete Settings, fresh reconnect behaviour, and account isolation. Edit coverage protects the Save flow used from Schedule and Menu Bar entry points. Menu submenu coverage checks Move/Copy placement, recurring and restricted events, existing meeting/location shortcuts, and duplicate Copy suppression. Event-opening coverage checks account-aware event and calendar-view URLs, default-browser routing, and account lookup failures.
 
 These checks include source contracts and executed UI logic with mocked Raycast boundaries; they do not replace local Raycast runtime verification.
 
