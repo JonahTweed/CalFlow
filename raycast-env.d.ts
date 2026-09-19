@@ -26,8 +26,6 @@ declare type Preferences = ExtensionPreferences
 declare namespace Preferences {
   /** Preferences accessible in the `schedule` command */
   export type Schedule = ExtensionPreferences & {}
-  /** Preferences accessible in the `event-actions` command */
-  export type EventActions = ExtensionPreferences & {}
   /** Preferences accessible in the `enabled-calendars` command */
   export type EnabledCalendars = ExtensionPreferences & {}
   /** Preferences accessible in the `set-up-calendars` command */
@@ -42,23 +40,13 @@ declare namespace Preferences {
   export type MenuBarSettings = ExtensionPreferences & {}
   /** Preferences accessible in the `menu-bar` command */
   export type MenuBar = ExtensionPreferences & {}
-  /** Preferences accessible in the `refresh-diagnostics` command */
-  export type RefreshDiagnostics = ExtensionPreferences & {}
-  /** Preferences accessible in the `check-connection` command */
-  export type CheckConnection = ExtensionPreferences & {}
   /** Preferences accessible in the `disconnect-google` command */
   export type DisconnectGoogle = ExtensionPreferences & {}
-  /** Preferences accessible in the `test-quick-add-parsing` command */
-  export type TestQuickAddParsing = ExtensionPreferences & {}
-  /** Preferences accessible in the `reset-onboarding` command */
-  export type ResetOnboarding = ExtensionPreferences & {}
 }
 
 declare namespace Arguments {
   /** Arguments passed to the `schedule` command */
   export type Schedule = {}
-  /** Arguments passed to the `event-actions` command */
-  export type EventActions = {}
   /** Arguments passed to the `enabled-calendars` command */
   export type EnabledCalendars = {}
   /** Arguments passed to the `set-up-calendars` command */
@@ -94,15 +82,7 @@ declare namespace Arguments {
   export type MenuBarSettings = {}
   /** Arguments passed to the `menu-bar` command */
   export type MenuBar = {}
-  /** Arguments passed to the `refresh-diagnostics` command */
-  export type RefreshDiagnostics = {}
-  /** Arguments passed to the `check-connection` command */
-  export type CheckConnection = {}
   /** Arguments passed to the `disconnect-google` command */
   export type DisconnectGoogle = {}
-  /** Arguments passed to the `test-quick-add-parsing` command */
-  export type TestQuickAddParsing = {}
-  /** Arguments passed to the `reset-onboarding` command */
-  export type ResetOnboarding = {}
 }
 

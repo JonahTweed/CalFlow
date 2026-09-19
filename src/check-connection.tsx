@@ -19,7 +19,7 @@ function escapeMarkdown(value: string): string {
   return value.replace(/[\\`*_{}[\]()#+\-.!]/g, "\\$&");
 }
 
-function Command() {
+export function ConnectionCheckView() {
   const [state, setState] = useState<ConnectionState>({ status: "loading" });
 
   const checkConnection = useCallback(async () => {
@@ -114,4 +114,4 @@ function Command() {
   );
 }
 
-export default withAccessToken(googleOAuth)(Command);
+export default withAccessToken(googleOAuth)(ConnectionCheckView);
