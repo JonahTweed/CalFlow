@@ -277,6 +277,7 @@ function Command() {
 
   async function save(values: Values) {
     setIsSaving(true);
+
     try {
       // Use the values submitted by Raycast as the source of truth.
       // The native form can visually update a Dropdown before React's controlled
@@ -302,6 +303,7 @@ function Command() {
       if (scheduleDirty) {
         writes.push(setScheduleEnabledCalendarIds(values.scheduleCalendars));
       }
+
       if (menuBarDirty) {
         writes.push(setMenuBarEnabledCalendarIds(values.menuBarCalendars));
       }
@@ -310,11 +312,13 @@ function Command() {
 
       const previousMenuBarCalendars = savedMenuBarCalendarsRef.current;
       const menuBarCalendarsChanged =
-        menuBarDirty && !sameIds(previousMenuBarCalendars, values.menuBarCalendars);
+        menuBarDirty &&
+        !sameIds(previousMenuBarCalendars, values.menuBarCalendars);
 
       if (scheduleDirty) {
         setScheduleCalendars(values.scheduleCalendars);
       }
+
       if (menuBarDirty) {
         setMenuBarCalendars(values.menuBarCalendars);
         savedMenuBarCalendarsRef.current = values.menuBarCalendars;
@@ -366,8 +370,9 @@ function Command() {
         actions={
           <ActionPanel>
             <Action
-              title="Open Extension Preferences"
+              title="Configure Extension"
               icon={Icon.Gear}
+              shortcut={{ modifiers: ["cmd", "opt"], key: "," }}
               onAction={openExtensionPreferences}
             />
           </ActionPanel>
@@ -391,17 +396,18 @@ function Command() {
             icon={Icon.Checkmark}
             onSubmit={save}
           />
+
           <Action
-            title="Open Extension Preferences"
+            title="Configure Extension"
             icon={Icon.Gear}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "p" }}
+            shortcut={{ modifiers: ["cmd", "opt"], key: "," }}
             onAction={async () => {
               try {
                 await openExtensionPreferences();
               } catch (err) {
                 await showToast({
                   style: Toast.Style.Failure,
-                  title: "Could not open Extension Preferences",
+                  title: "Could not open DayCal settings",
                   message: err instanceof Error ? err.message : String(err),
                 });
               }
@@ -540,7 +546,7 @@ function Command() {
 
       <Form.Description
         title="More Settings"
-        text="Schedule range, Google Calendar app, declined-event handling, Calendar Selection Mode, menu-bar visibility, and headline style remain in Raycast's Extension Preferences. Press ⌘, to open them, or use Open Extension Preferences from the Action Panel (⌘K)."
+        text="Schedule range, Google Calendar app, declined-event handling, Calendar Selection Mode, menu-bar visibility, and headline style are available in DayCal's Extension Preferences. Press ⌥⌘, or choose Configure Extension from the Action Panel."
       />
     </Form>
   );
