@@ -71,10 +71,8 @@ If Google sign-in fails during the beta, please report it through GitHub Issues.
 | **Add Personal Event** | Quick Add to the Personal role |
 | **Add Work Event** | Quick Add to the Work role |
 | **Add Shared Event** | Quick Add to the Shared / Partner role |
-| **Check Google Calendar Connection** | Verify Google Calendar access |
 | **Disconnect Google Account** | Sign out locally and choose whether to keep or delete that account’s saved DayCal setup |
 
-Development builds also include non-destructive diagnostics and parsing/setup replay commands to help beta testing.
 
 ## Suggested hotkeys
 
@@ -106,7 +104,7 @@ DayCal supports UK (`DD/MM/YYYY`) and US (`MM/DD/YYYY`) date modes from Calendar
 
 ## Opening events and calendars
 
-**Open Event / Open in Google Calendar** opens the exact event in your default browser for the connected Google account, including secondary accounts, from Schedule, Next Up, Edit Event, Event Actions, and the menu bar. Sign in to that account in your browser if prompted. If Google supplies no event link, the existing fallback opens the event day rather than a specific event.
+**Open Event / Open in Google Calendar** opens the exact event in your default browser for the connected Google account, including secondary accounts, from Schedule, Next Up, Edit Event, and the menu bar. Sign in to that account in your browser if prompted. If Google supplies no event link, the existing fallback opens the event day rather than a specific event.
 
 **Open Calendar** in the menu bar also uses your default browser, opening the calendar view for the currently connected Google account. It resolves the account when clicked, even if no events are visible.
 
@@ -155,7 +153,6 @@ The `npm test` suite covers parsing, calendar routing, refresh wiring, onboardin
 
 These checks include source contracts and executed UI logic with mocked Raycast boundaries; they do not replace local Raycast runtime verification.
 
-A **Refresh Diagnostics — Development** command also performs a non-destructive live check of the real Raycast menu-bar refresh pipeline.
 
 ## Reporting beta issues
 

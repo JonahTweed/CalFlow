@@ -12,6 +12,20 @@ test("DayCal display branding preserves the installed extension identity", () =>
   assert.ok(existsSync(new URL("../assets/daycal@dark.png", import.meta.url)));
   assert.doesNotMatch(JSON.stringify(manifest.commands), /CalFlow/);
 });
+
+test("Store-facing manifest hides internal helper commands", () => {
+  const commandNames = manifest.commands.map((command) => command.name);
+  for (const internalName of [
+    "event-actions",
+    "check-connection",
+    "refresh-diagnostics",
+    "test-quick-add-parsing",
+    "reset-onboarding",
+  ]) {
+    assert.ok(!commandNames.includes(internalName), `${internalName} must not be exposed in the public manifest`);
+  }
+  assert.ok(manifest.commands.every((command) => command.subtitle !== "Development"));
+});
 test("native source surfaces do not reintroduce CalFlow display text", () => {
   function check(directory) {
     for (const entry of readdirSync(directory, { withFileTypes: true })) {

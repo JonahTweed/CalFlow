@@ -684,7 +684,7 @@ export function EventActionsView({
   );
 }
 
-function Command(props: EventActionsLaunchProps) {
+export function EventActionsCommandView(props: EventActionsLaunchProps) {
   const calendar = props.launchContext?.calendar;
   const event = props.launchContext?.event;
   const action = props.launchContext?.action ?? "view";
@@ -799,4 +799,4 @@ function DeleteEventView({ calendar, event }: Props) {
   return <Detail navigationTitle="Delete Event" markdown=" " />;
 }
 
-export default withAccessToken(googleOAuth)(Command);
+export default withAccessToken(googleOAuth)(EventActionsCommandView);

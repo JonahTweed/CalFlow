@@ -18,8 +18,10 @@ import {
 } from "@raycast/api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EditEvent from "./edit-event";
+import { ConnectionCheckView } from "./check-connection";
 import {
   CalendarTransferView,
+  EventActionsCommandView,
   EventActionsView,
   EventActionsLaunchContext,
   canEditEvent,
@@ -193,7 +195,7 @@ function Command(props: ScheduleLaunchProps) {
   const target = props.launchContext;
 
   if (target?.calendar && target?.event) {
-    return <EventActionsView calendar={target.calendar} event={target.event} />;
+    return <EventActionsCommandView {...props} />;
   }
 
   return <ScheduleView />;
@@ -453,15 +455,10 @@ function ScheduleView() {
                 icon={Icon.ArrowClockwise}
                 onAction={reload}
               />
-              <Action
+              <Action.Push
                 title="Check Google Calendar Connection"
                 icon={Icon.Globe}
-                onAction={() =>
-                  launchCommand({
-                    name: "check-connection",
-                    type: LaunchType.UserInitiated,
-                  })
-                }
+                target={<ConnectionCheckView />}
               />
             </ActionPanel>
           }

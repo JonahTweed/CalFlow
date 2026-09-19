@@ -27,13 +27,6 @@
       "mode": "view"
     },
     {
-      "name": "event-actions",
-      "title": "Event Actions",
-      "subtitle": "DayCal",
-      "description": "Manage a Google Calendar event selected from DayCal.",
-      "mode": "view"
-    },
-    {
       "name": "enabled-calendars",
       "title": "Enabled Calendars",
       "subtitle": "DayCal",
@@ -144,39 +137,11 @@
       "interval": "1m"
     },
     {
-      "name": "refresh-diagnostics",
-      "title": "Refresh Diagnostics",
-      "subtitle": "Development",
-      "description": "Run a non-destructive runtime check of the live DayCal menu-bar refresh pipeline.",
-      "mode": "view"
-    },
-    {
-      "name": "check-connection",
-      "title": "Check Google Calendar Connection",
-      "subtitle": "DayCal",
-      "description": "Verify that the direct Google Calendar connection is working.",
-      "mode": "view"
-    },
-    {
       "name": "disconnect-google",
       "title": "Disconnect Google Account",
       "subtitle": "DayCal",
       "description": "Disconnect Google Calendar and choose whether to keep or delete this account’s saved DayCal setup.",
       "mode": "view"
-    },
-    {
-      "name": "test-quick-add-parsing",
-      "title": "Test Quick Add Parsing",
-      "subtitle": "Development",
-      "description": "Dry-run UK/US, all-day, duration, and Google payload parsing without creating calendar events.",
-      "mode": "view"
-    },
-    {
-      "name": "reset-onboarding",
-      "title": "Replay Calendar Setup",
-      "subtitle": "Development",
-      "description": "Development-only replay of onboarding while keeping saved calendar choices and Google authorization.",
-      "mode": "no-view"
     }
   ],
   "preferences": [

@@ -112,6 +112,7 @@ test("Writable one-off keeps the exact menu layout and existing Move dispatch", 
   const menu = renderSubmenu({ calendar, event });
   assert.deepEqual(titles(menu), ["Open Event", "Edit Event", "Move to Calendar…", "More Actions…", "Delete Event…"]);
   await menu.children.find((child) => child.props.title === "Move to Calendar…").props.onAction();
+  assert.equal(launches.at(-1).name, "schedule");
   assert.equal(launches.at(-1).context.action, "move");
 });
 
@@ -121,7 +122,7 @@ for (const recurrence of [{ recurringEventId: "series" }, { recurrence: ["RRULE:
     const menu = renderSubmenu({ calendar, event: recurring });
     assert.deepEqual(titles(menu), ["Open Event", "Edit Event", "Copy to Calendar…", "More Actions…", "Delete Event…"]);
     await menu.children.find((child) => child.props.title === "Copy to Calendar…").props.onAction();
-    assert.equal(launches.at(-1).name, "event-actions");
+    assert.equal(launches.at(-1).name, "schedule");
     assert.equal(launches.at(-1).context.action, "copy");
     assert.equal(launches.at(-1).context.event, recurring);
     assert.equal(launches.at(-1).context.calendar, calendar);

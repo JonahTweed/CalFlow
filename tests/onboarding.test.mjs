@@ -168,8 +168,9 @@ check(
 check(
   "Native OAuth error path has no Google Cloud credential instructions",
   !setup.includes("console.cloud.google.com/apis/credentials") &&
-    setup.includes('name: "check-connection"'),
-  "Errors now offer retry/connection diagnostics instead of legacy manual OAuth setup.",
+    setup.includes("ConnectionCheckView") &&
+    setup.includes('title="Check Google Calendar Connection"'),
+  "Errors now offer contextual connection diagnostics instead of legacy manual OAuth setup or a public support command.",
 );
 
 check(
@@ -205,8 +206,9 @@ check(
 check(
   "Schedule Native OAuth error path has no legacy Google Cloud setup link",
   !schedule.includes("console.cloud.google.com/apis/credentials") &&
-    schedule.includes('name: "check-connection"'),
-  "Schedule errors point to the Native OAuth connection diagnostic rather than the removed manual credential flow.",
+    schedule.includes("ConnectionCheckView") &&
+    schedule.includes('title="Check Google Calendar Connection"'),
+  "Schedule errors keep the Native OAuth connection diagnostic contextual rather than exposing it in Root Search.",
 );
 
 check(
@@ -232,10 +234,9 @@ check(
 
 const replayCommand = pkg.commands.find((item) => item.name === "reset-onboarding");
 check(
-  "Development command is labelled Replay, not Reset",
-  replayCommand?.title === "Replay Calendar Setup" &&
-    replayCommand?.description?.includes("keeping saved calendar choices"),
-  "The development helper no longer implies that it is safe to wipe an account's configuration during onboarding tests.",
+  "Development setup replay is not exposed as a public command",
+  replayCommand === undefined,
+  "The replay helper remains available in source for development testing but is not listed in the Store-facing Raycast manifest.",
 );
 
 // Execute the actual redirect effect with mocked Raycast/storage boundaries.

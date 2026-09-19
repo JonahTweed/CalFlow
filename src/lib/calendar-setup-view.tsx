@@ -13,6 +13,7 @@ import {
   showToast,
 } from "@raycast/api";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ConnectionCheckView } from "../check-connection";
 import {
   CalendarRoleMap,
   CalendarSelectionMode,
@@ -470,15 +471,10 @@ export function CalendarSetupView({ onComplete }: Props) {
               icon={Icon.ArrowClockwise}
               onAction={() => void load()}
             />
-            <Action
+            <Action.Push
               title="Check Google Calendar Connection"
               icon={Icon.Link}
-              onAction={() =>
-                launchCommand({
-                  name: "check-connection",
-                  type: LaunchType.UserInitiated,
-                })
-              }
+              target={<ConnectionCheckView />}
             />
           </ActionPanel>
         }

@@ -537,7 +537,7 @@ async function launchEventAction(
 ): Promise<void> {
   try {
     await launchCommand({
-      name: "event-actions",
+      name: "schedule",
       type: LaunchType.UserInitiated,
       context: {
         calendar: item.calendar,

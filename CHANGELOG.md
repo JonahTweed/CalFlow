@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Removed **Check Google Calendar Connection** from Raycast Root Search. Connection diagnostics remain available contextually from DayCal error states without exposing a standalone support command.
+- Removed development-only **Refresh Diagnostics**, **Test Quick Add Parsing**, and **Replay Calendar Setup** commands from the public Raycast manifest ahead of Store submission. Their source and regression tooling remain available for development.
+- Removed the internal **Event Actions** helper from Raycast Root Search. Menu Bar event actions now route through **Schedule** with event context, while the shared Event Actions views remain internal and reusable.
+- Polished **Calendar Settings** so its Action Panel uses Raycast-style **Configure Extension** wording with the `⌥⌘,` extension-preferences shortcut.
+
 ## 0.17.0 Public Beta — 2026-09-18
 
 - Google OAuth verification for the sensitive `calendar.events` scope was approved, and a fresh-account runtime test completed without Google’s unverified-app warning.
