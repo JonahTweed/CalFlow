@@ -40,8 +40,7 @@ export async function chooseCalendar(
 
   const useCurrent = await confirmAlert({
     title: "More options",
-    message:
-      `Keep “${title}” in “${currentCalendar}”, or return to the event form to edit it.`,
+    message: `Keep “${title}” in “${currentCalendar}”, or return to the event form to edit it.`,
     primaryAction: {
       title: `Add to ${currentCalendar}`,
       style: Alert.ActionStyle.Default,

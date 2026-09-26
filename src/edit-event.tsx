@@ -77,7 +77,8 @@ function addCalendarDays(value: Date, days: number): Date {
 
 function calendarDayNumber(value: Date): number {
   return Math.floor(
-    Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()) / 86_400_000,
+    Date.UTC(value.getFullYear(), value.getMonth(), value.getDate()) /
+      86_400_000,
   );
 }
 
@@ -147,14 +148,19 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
       const description = values.description.trim();
 
       if (!title) {
-        await showToast({ style: Toast.Style.Failure, title: "Enter an event title" });
+        await showToast({
+          style: Toast.Style.Failure,
+          title: "Enter an event title",
+        });
         return;
       }
 
       if (!values.start || !values.end) {
         await showToast({
           style: Toast.Style.Failure,
-          title: allDay ? "Start and end dates are required" : "Start and end are required",
+          title: allDay
+            ? "Start and end dates are required"
+            : "Start and end are required",
         });
         return;
       }
@@ -185,7 +191,10 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         });
       } else {
         if (values.end.getTime() <= values.start.getTime()) {
-          await showToast({ style: Toast.Style.Failure, title: "End must be after start" });
+          await showToast({
+            style: Toast.Style.Failure,
+            title: "End must be after start",
+          });
           return;
         }
 
@@ -226,7 +235,9 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
             title="Save Event"
             icon={Icon.Checkmark}
             shortcut={{ modifiers: ["cmd"], key: "return" }}
-            onAction={() => submit({ title, start, end, location, description })}
+            onAction={() =>
+              submit({ title, start, end, location, description })
+            }
           />
           {event.htmlLink ? (
             <Action.OpenInBrowser
@@ -237,13 +248,20 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         </ActionPanel>
       }
     >
-      <Form.TextField id="title" title="Title" value={title} onChange={setTitle} />
+      <Form.TextField
+        id="title"
+        title="Title"
+        value={title}
+        onChange={setTitle}
+      />
       <Form.DatePicker
         id="start"
         title={allDay ? "Start Date" : "Start"}
         value={start}
         onChange={handleStartChange}
-        type={allDay ? Form.DatePicker.Type.Date : Form.DatePicker.Type.DateTime}
+        type={
+          allDay ? Form.DatePicker.Type.Date : Form.DatePicker.Type.DateTime
+        }
       />
       <Form.DatePicker
         id="end"
@@ -251,10 +269,22 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         value={end}
         onChange={setEnd}
         min={start || undefined}
-        type={allDay ? Form.DatePicker.Type.Date : Form.DatePicker.Type.DateTime}
+        type={
+          allDay ? Form.DatePicker.Type.Date : Form.DatePicker.Type.DateTime
+        }
       />
-      <Form.TextField id="location" title="Location" value={location} onChange={setLocation} />
-      <Form.TextArea id="description" title="Description" value={description} onChange={setDescription} />
+      <Form.TextField
+        id="location"
+        title="Location"
+        value={location}
+        onChange={setLocation}
+      />
+      <Form.TextArea
+        id="description"
+        title="Description"
+        value={description}
+        onChange={setDescription}
+      />
     </Form>
   );
 }

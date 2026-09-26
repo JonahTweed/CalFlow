@@ -1,8 +1,5 @@
 import { LocalStorage } from "@raycast/api";
-import {
-  currentGoogleConnectionFingerprint,
-  listCalendars,
-} from "./google";
+import { currentGoogleConnectionFingerprint, listCalendars } from "./google";
 import { GoogleCalendarEntry } from "./types";
 
 export type CalendarRole = "personal" | "work" | "shared" | "family";
@@ -40,12 +37,10 @@ const ROLES: CalendarRole[] = ["personal", "work", "shared", "family"];
 
 type AccountScopeIndex = Record<string, string>;
 
-let accountScopeCache:
-  | {
-      connectionFingerprint: string;
-      promise: Promise<string>;
-    }
-  | null = null;
+let accountScopeCache: {
+  connectionFingerprint: string;
+  promise: Promise<string>;
+} | null = null;
 
 // Raycast LocalStorage is shared by the extension. Keep JSON writes ordered so
 // multiple settings saved together cannot race and leave only part of a setup
@@ -136,7 +131,10 @@ async function resolveConnectedAccountScope(): Promise<string> {
     // A user is unlikely to connect many accounts, but keep this housekeeping
     // bounded so repeated developer OAuth tests cannot grow LocalStorage forever.
     const recentEntries = Object.entries(updated).slice(-12);
-    await writeJson(STORAGE.accountScopeIndex, Object.fromEntries(recentEntries));
+    await writeJson(
+      STORAGE.accountScopeIndex,
+      Object.fromEntries(recentEntries),
+    );
 
     return scope;
   })();
@@ -169,9 +167,7 @@ function normaliseCalendarIds(ids: unknown, label: string): string[] {
     throw new Error(`${label} calendar selection was invalid.`);
   }
 
-  return Array.from(
-    new Set(ids.map((value) => value.trim()).filter(Boolean)),
-  );
+  return Array.from(new Set(ids.map((value) => value.trim()).filter(Boolean)));
 }
 
 function looksLikeEmailAddress(value: string): boolean {
@@ -374,10 +370,7 @@ async function purgeStorageKeys(keys: string[]): Promise<void> {
         await LocalStorage.removeItem(key);
       }
 
-      remaining = presentStorageKeys(
-        await LocalStorage.allItems(),
-        uniqueKeys,
-      );
+      remaining = presentStorageKeys(await LocalStorage.allItems(), uniqueKeys);
     }
 
     if (remaining.length > 0) {
@@ -396,7 +389,10 @@ async function purgeStorageKeys(keys: string[]): Promise<void> {
 
 export async function deleteCurrentAccountCalendarSettings(): Promise<void> {
   const scope = await resolveConnectedAccountScope();
-  const index = await readJson<AccountScopeIndex>(STORAGE.accountScopeIndex, {});
+  const index = await readJson<AccountScopeIndex>(
+    STORAGE.accountScopeIndex,
+    {},
+  );
   const setupKeys = [
     ...accountScopedSetupKeys(scope),
     // Older builds used unscoped v1 keys. Current readers do not normally use
@@ -428,10 +424,7 @@ export async function deleteCurrentAccountCalendarSettings(): Promise<void> {
 
 export async function resetCalendarSetup(): Promise<void> {
   const scope = await resolveConnectedAccountScope();
-  const setupKeys = [
-    ...accountScopedSetupKeys(scope),
-    ...legacySetupKeys(),
-  ];
+  const setupKeys = [...accountScopedSetupKeys(scope), ...legacySetupKeys()];
 
   await purgeStorageKeys(setupKeys);
 }

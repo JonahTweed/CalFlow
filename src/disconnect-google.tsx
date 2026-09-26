@@ -122,8 +122,9 @@ function ConnectedDisconnectCommand() {
 // gives deleteCurrentAccountCalendarSettings() the authenticated context needed
 // by getAccessToken(), without turning the disconnect command into a sign-in
 // command when the user is already disconnected.
-const AuthenticatedDisconnectCommand =
-  withAccessToken(googleOAuth)(ConnectedDisconnectCommand);
+const AuthenticatedDisconnectCommand = withAccessToken(googleOAuth)(
+  ConnectedDisconnectCommand,
+);
 
 export default function Command() {
   const [connected, setConnected] = useState<boolean | null>(null);
@@ -144,7 +145,9 @@ export default function Command() {
         if (active) setConnected(hasConnection);
       } catch (error) {
         if (!active) return;
-        setCheckingError(error instanceof Error ? error.message : String(error));
+        setCheckingError(
+          error instanceof Error ? error.message : String(error),
+        );
         setConnected(false);
       }
     })();
@@ -164,7 +167,10 @@ export default function Command() {
         <List.EmptyView
           icon={Icon.Lock}
           title="Google Calendar is disconnected"
-          description={checkingError || "Connect DayCal again from any Google Calendar command."}
+          description={
+            checkingError ||
+            "Connect DayCal again from any Google Calendar command."
+          }
         />
       </List>
     );

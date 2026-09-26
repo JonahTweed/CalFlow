@@ -12,16 +12,22 @@ export type ScheduleOptions = {
 function connectedGoogleAccountId(
   calendars: GoogleCalendarEntry[],
 ): string | undefined {
-  return calendars.find((calendar) => calendar.primary)?.id?.trim() || undefined;
+  return (
+    calendars.find((calendar) => calendar.primary)?.id?.trim() || undefined
+  );
 }
 
-function withGoogleAuthUser(rawUrl: string, authUser: string | undefined): string {
+function withGoogleAuthUser(
+  rawUrl: string,
+  authUser: string | undefined,
+): string {
   if (!authUser) return rawUrl;
 
   try {
     const url = new URL(rawUrl);
     const googleCalendarUrl =
-      (url.hostname === "calendar.google.com" || url.hostname === "www.google.com") &&
+      (url.hostname === "calendar.google.com" ||
+        url.hostname === "www.google.com") &&
       url.pathname.startsWith("/calendar/");
 
     if (!googleCalendarUrl) return rawUrl;
@@ -44,7 +50,9 @@ function withGoogleAuthUser(rawUrl: string, authUser: string | undefined): strin
 export async function connectedGoogleCalendarViewUrl(): Promise<string> {
   const authUser = connectedGoogleAccountId(await listCalendars());
   if (!authUser) {
-    throw new Error("Could not identify the connected Google account. Refresh your connection and try again.");
+    throw new Error(
+      "Could not identify the connected Google account. Refresh your connection and try again.",
+    );
   }
   return withGoogleAuthUser("https://calendar.google.com/calendar/r", authUser);
 }
@@ -231,10 +239,7 @@ export function calendarDisplayColor(item: ScheduleEvent): string | undefined {
 }
 
 export type CompactSectionKey =
-  | "this-week"
-  | "next-week"
-  | `rest:${string}`
-  | `month:${string}`;
+  "this-week" | "next-week" | `rest:${string}` | `month:${string}`;
 
 function localEventDate(item: ScheduleEvent): Date {
   const raw =

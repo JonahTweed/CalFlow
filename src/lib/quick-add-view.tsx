@@ -105,7 +105,6 @@ export function QuickAddView({
     void submit(initial);
 
     // Launch values are fixed for this invocation.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setupComplete]);
 
   if (setupComplete === null) {

@@ -14,8 +14,20 @@ function harness({ allDay = false, update = async () => {} } = {}) {
   });
   const Action = Object.assign(component("Action"), { OpenInBrowser: "OpenInBrowser" });
   const modules = {
-    "@raycast/api": { Form, Action, ActionPanel: "ActionPanel", Icon: { Checkmark: "check" }, Toast: { Style: { Failure: "failure", Success: "success" } },
-      showToast: async (toast) => toasts.push(toast), useNavigation: () => ({ pop: () => pops++ }) },
+    "@raycast/api": {
+      Form,
+      Action,
+      ActionPanel: "ActionPanel",
+      Icon: { Checkmark: "check" },
+      Keyboard: {
+        Shortcut: {
+          Common: new Proxy({}, { get: (_, key) => key }),
+        },
+      },
+      Toast: { Style: { Failure: "failure", Success: "success" } },
+      showToast: async (toast) => toasts.push(toast),
+      useNavigation: () => ({ pop: () => pops++ }),
+    },
     react: {
       useState(initial) { const i = index++; if (!(i in state)) state[i] = initial; return [state[i], (value) => { state[i] = value; }]; },
       useRef(initial) { const i = index++; if (!(i in state)) state[i] = { current: initial }; return state[i]; },

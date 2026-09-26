@@ -25,6 +25,7 @@ function harness() {
       subscribe(fn) { const list = listeners.get(this.name) || new Set(); listeners.set(this.name, list); list.add(fn); return () => list.delete(fn); }
     },
     Icon: ui, Color: ui, MenuBarExtra: ui,
+    Keyboard: { Shortcut: { Common: ui } },
     Action: { Style: ui }, ActionPanel: ui, List: ui,
     Alert: { ActionStyle: ui }, Toast: { Style: ui },
     LaunchType: { Background: "background", UserInitiated: "user" }, environment: { launchType: "background" },

@@ -15,6 +15,7 @@ import {
   launchCommand,
   open,
   showToast,
+  Keyboard,
 } from "@raycast/api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import EditEvent from "./edit-event";
@@ -155,7 +156,7 @@ function AddEventSubmenu() {
     <ActionPanel.Submenu
       title="Add Event…"
       icon={Icon.Plus}
-      shortcut={{ modifiers: ["cmd"], key: "n" }}
+      shortcut={Keyboard.Shortcut.Common.New}
     >
       <Action
         title="Personal"
@@ -212,7 +213,9 @@ function ScheduleView() {
   const [calendarFilter, setCalendarFilter] = useState("all");
   const scheduleSelectionSignatureRef = useRef<string | null>(null);
   const setupRedirectStartedRef = useRef(false);
-  const [setupRedirectError, setSetupRedirectError] = useState<string | null>(null);
+  const [setupRedirectError, setSetupRedirectError] = useState<string | null>(
+    null,
+  );
 
   const reload = useCallback(async () => {
     setIsLoading(true);
@@ -393,9 +396,7 @@ function ScheduleView() {
   }
 
   if (setupComplete === null) {
-    return (
-      <List isLoading searchBarPlaceholder="Loading DayCal…" />
-    );
+    return <List isLoading searchBarPlaceholder="Loading DayCal…" />;
   }
 
   if (!setupComplete) {
@@ -417,7 +418,7 @@ function ScheduleView() {
             setupRedirectError ? (
               <ActionPanel>
                 <Action
-                  title="Open Set Up Calendars"
+                  title="Open Set up Calendars"
                   icon={Icon.Gear}
                   onAction={() => {
                     setupRedirectStartedRef.current = true;
@@ -524,7 +525,7 @@ function ScheduleView() {
                   <Action
                     title="Refresh Schedule"
                     icon={Icon.ArrowClockwise}
-                    shortcut={{ modifiers: ["cmd"], key: "r" }}
+                    shortcut={Keyboard.Shortcut.Common.Refresh}
                     onAction={reload}
                   />
                 </ActionPanel>
@@ -541,7 +542,7 @@ function ScheduleView() {
                   <Action
                     title="Refresh Schedule"
                     icon={Icon.ArrowClockwise}
-                    shortcut={{ modifiers: ["cmd"], key: "r" }}
+                    shortcut={Keyboard.Shortcut.Common.Refresh}
                     onAction={reload}
                   />
                 </ActionPanel>
@@ -570,7 +571,7 @@ function ScheduleView() {
               <Action
                 title="Refresh Schedule"
                 icon={Icon.ArrowClockwise}
-                shortcut={{ modifiers: ["cmd"], key: "r" }}
+                shortcut={Keyboard.Shortcut.Common.Refresh}
                 onAction={reload}
               />
             </ActionPanel>
@@ -637,7 +638,7 @@ function ScheduleView() {
                       <Action.Push
                         title="Edit in Raycast"
                         icon={Icon.Pencil}
-                        shortcut={{ modifiers: ["cmd"], key: "e" }}
+                        shortcut={Keyboard.Shortcut.Common.Edit}
                         target={
                           <EditEvent
                             calendar={item.calendar}
@@ -650,7 +651,7 @@ function ScheduleView() {
                       <Action.Push
                         title="Edit Event"
                         icon={Icon.Pencil}
-                        shortcut={{ modifiers: ["cmd"], key: "e" }}
+                        shortcut={Keyboard.Shortcut.Common.Edit}
                         target={
                           <EditEvent
                             calendar={item.calendar}
@@ -757,7 +758,7 @@ function ScheduleView() {
                       <Action
                         title="Refresh Schedule"
                         icon={Icon.ArrowClockwise}
-                        shortcut={{ modifiers: ["cmd"], key: "r" }}
+                        shortcut={Keyboard.Shortcut.Common.Refresh}
                         onAction={reload}
                       />
                       {modifiable ? (

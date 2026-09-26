@@ -1,9 +1,5 @@
 import { getAccessToken } from "@raycast/utils";
-import {
-  GoogleApiList,
-  GoogleCalendarEntry,
-  GoogleEvent,
-} from "./types";
+import { GoogleApiList, GoogleCalendarEntry, GoogleEvent } from "./types";
 
 const API_ROOT = "https://www.googleapis.com/calendar/v3";
 

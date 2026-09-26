@@ -1,6 +1,9 @@
 import { withAccessToken } from "@raycast/utils";
 import { googleOAuth } from "./lib/google-oauth";
-import { menuBarSessionRevision, subscribeMenuBarSession } from "./lib/menu-bar-session";
+import {
+  menuBarSessionRevision,
+  subscribeMenuBarSession,
+} from "./lib/menu-bar-session";
 import { transferModeFor } from "./event-actions";
 import {
   Cache,
@@ -14,6 +17,7 @@ import {
   launchCommand,
   open,
   showHUD,
+  Keyboard,
 } from "@raycast/api";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
@@ -40,22 +44,11 @@ import {
   loadSchedule,
   timeLabel,
 } from "./lib/schedule";
-import {
-  currentGoogleConnectionFingerprint,
-  isWritable,
-} from "./lib/google";
+import { currentGoogleConnectionFingerprint, isWritable } from "./lib/google";
 import { GoogleCalendarEntry, GoogleEvent, ScheduleEvent } from "./lib/types";
 
 type MenuBarMode =
-  | "never"
-  | "2"
-  | "5"
-  | "10"
-  | "15"
-  | "30"
-  | "60"
-  | "upcoming"
-  | "always";
+  "never" | "2" | "5" | "10" | "15" | "30" | "60" | "upcoming" | "always";
 
 type MenuBarHeadlineStyle = "smart" | "event-only";
 
@@ -76,7 +69,6 @@ function menuBarCacheKey(): string {
     return `${MENU_BAR_CACHE_KEY_PREFIX}:unconfigured`;
   }
 }
-const DEFAULT_MENU_EVENTS = 10;
 const menuBarCache = new Cache({ namespace: "calendar-shortcuts-menu-bar" });
 
 type MenuBarLaunchContext = {
@@ -482,7 +474,9 @@ async function openCalendarInBrowser(): Promise<void> {
   try {
     await open(await connectedGoogleCalendarViewUrl());
   } catch (error) {
-    await showHUD(error instanceof Error ? error.message : "Could not open Google Calendar");
+    await showHUD(
+      error instanceof Error ? error.message : "Could not open Google Calendar",
+    );
   }
 }
 
@@ -586,9 +580,7 @@ async function launchEventAction(
   }
 }
 
-function Command(
-  props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>,
-) {
+function Command(props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>) {
   const sessionRevision = useRef(menuBarSessionRevision()).current;
   const sessionIsCurrent = useCallback(
     () => menuBarSessionRevision() === sessionRevision,
@@ -637,9 +629,7 @@ function Command(
     initialDisplaySettings.rowLayout,
   );
   const [menuBarHeadlineStyle, setMenuBarHeadlineStyle] =
-    useState<MenuBarHeadlineStyle>(
-      preferences.menuBarHeadlineStyle ?? "smart",
-    );
+    useState<MenuBarHeadlineStyle>(preferences.menuBarHeadlineStyle ?? "smart");
 
   const syncMenuBarRuntimeSettings = useCallback(async () => {
     const settings = await readMenuBarDisplaySettings();
@@ -653,9 +643,7 @@ function Command(
   const reload = useCallback(async () => {
     if (!sessionIsCurrent()) return;
     const latestPreferences = getPreferenceValues<Preferences>();
-    setMenuBarHeadlineStyle(
-      latestPreferences.menuBarHeadlineStyle ?? "smart",
-    );
+    setMenuBarHeadlineStyle(latestPreferences.menuBarHeadlineStyle ?? "smart");
 
     // Calendar Settings lives in a separate Raycast command. Its LocalStorage
     // changes do not automatically update this already-running menu-bar
@@ -712,7 +700,8 @@ function Command(
         events: freshEvents,
       });
     } catch (err) {
-      if (sessionIsCurrent()) setError(err instanceof Error ? err.message : String(err));
+      if (sessionIsCurrent())
+        setError(err instanceof Error ? err.message : String(err));
     } finally {
       if (sessionIsCurrent()) setIsLoading(false);
     }
@@ -773,24 +762,27 @@ function Command(
       environment.launchType !== LaunchType.UserInitiated ||
       setupComplete !== false ||
       setupRedirectStartedRef.current
-    ) return;
+    )
+      return;
 
     // Only explicit launches guide the user into setup. Recheck the existing
     // account-scoped flag because an incomplete snapshot may outlive setup.
     // Keep the guard set even on failure: the dropdown CTA allows a manual
     // retry without repeated automatic launches or a polling worker.
     setupRedirectStartedRef.current = true;
-    void isCalendarSetupComplete().then(async (complete) => {
-      if (!sessionIsCurrent()) return;
-      setSetupComplete(complete);
-      if (complete) return;
-      await launchCommand({
-        name: "set-up-calendars",
-        type: LaunchType.UserInitiated,
+    void isCalendarSetupComplete()
+      .then(async (complete) => {
+        if (!sessionIsCurrent()) return;
+        setSetupComplete(complete);
+        if (complete) return;
+        await launchCommand({
+          name: "set-up-calendars",
+          type: LaunchType.UserInitiated,
+        });
+      })
+      .catch((err) => {
+        setError(err instanceof Error ? err.message : String(err));
       });
-    }).catch((err) => {
-      setError(err instanceof Error ? err.message : String(err));
-    });
   }, [setupComplete, sessionIsCurrent]);
 
   const toggleMeetingFilter = useCallback(async () => {
@@ -878,11 +870,11 @@ function Command(
     >
       {setupComplete === false ? (
         <MenuBarExtra.Section title="DayCal">
-        <MenuBarExtra.Item
-          title="Open Calendar"
-          icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}
-          onAction={openCalendarInBrowser}
-        />
+          <MenuBarExtra.Item
+            title="Open Calendar"
+            icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}
+            onAction={openCalendarInBrowser}
+          />
           <MenuBarExtra.Item
             title="Set Up Calendars"
             subtitle="Finish first-run calendar setup"
@@ -928,7 +920,8 @@ function Command(
                 ordinaryEvent;
               const promotedCopy = transferSlotAvailable && recurringEvent;
               const showMove =
-                transferSlotAvailable && !recurringEvent &&
+                transferSlotAvailable &&
+                !recurringEvent &&
                 transferModeFor(item.calendar, item.event) === "move";
               return (
                 <MenuBarExtra.Submenu
@@ -1026,7 +1019,9 @@ function Command(
                       source: Icon.Ellipsis,
                       tintColor: Color.PrimaryText,
                     }}
-                    onAction={() => launchEventAction(item, "view", promotedCopy)}
+                    onAction={() =>
+                      launchEventAction(item, "view", promotedCopy)
+                    }
                   />
 
                   <MenuBarExtra.Separator />
@@ -1074,7 +1069,7 @@ function Command(
         <MenuBarExtra.Item
           title="Open Schedule"
           icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}
-          shortcut={{ modifiers: ["cmd"], key: "s" }}
+          shortcut={Keyboard.Shortcut.Common.Save}
           onAction={() =>
             launchCommand({
               name: "schedule",
@@ -1139,7 +1134,7 @@ function Command(
         <MenuBarExtra.Item
           title="Refresh"
           icon={{ source: Icon.ArrowClockwise, tintColor: Color.PrimaryText }}
-          shortcut={{ modifiers: ["cmd"], key: "r" }}
+          shortcut={Keyboard.Shortcut.Common.Refresh}
           onAction={reload}
         />
 
@@ -1162,13 +1157,22 @@ const AuthenticatedMenuBar = withAccessToken(googleOAuth)(Command);
 
 function SignedOutMenuBar({ isLoading = false }: { isLoading?: boolean } = {}) {
   return (
-    <MenuBarExtra icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }} tooltip="DayCal" isLoading={isLoading}>
+    <MenuBarExtra
+      icon={{ source: Icon.Calendar, tintColor: Color.PrimaryText }}
+      tooltip="DayCal"
+      isLoading={isLoading}
+    >
       <MenuBarExtra.Section title="DayCal">
         <MenuBarExtra.Item
           title="Set Up Calendars"
           subtitle="Connect Google Calendar to get started"
           icon={{ source: Icon.Gear, tintColor: Color.PrimaryText }}
-          onAction={() => launchCommand({ name: "set-up-calendars", type: LaunchType.UserInitiated })}
+          onAction={() =>
+            launchCommand({
+              name: "set-up-calendars",
+              type: LaunchType.UserInitiated,
+            })
+          }
         />
       </MenuBarExtra.Section>
     </MenuBarExtra>
@@ -1177,7 +1181,9 @@ function SignedOutMenuBar({ isLoading = false }: { isLoading?: boolean } = {}) {
 
 // Token presence is checked without authorizing. Only the authenticated child
 // uses withAccessToken (including its normal token refresh behavior).
-export default function MenuBarShell(props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>) {
+export default function MenuBarShell(
+  props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>,
+) {
   const [isCheckingConnection, setIsCheckingConnection] = useState(true);
   const [connection, setConnection] = useState<{
     revision: string;
@@ -1194,8 +1200,16 @@ export default function MenuBarShell(props: LaunchProps<{ launchContext?: MenuBa
       setConnection(null); // Unmount the authenticated tree and its event state.
       try {
         const tokens = await googleOAuth.client.getTokens();
-        if (!disposed && attempt === check && revision === menuBarSessionRevision()) {
-          setConnection(tokens?.accessToken ? { revision, context: props.launchContext } : null);
+        if (
+          !disposed &&
+          attempt === check &&
+          revision === menuBarSessionRevision()
+        ) {
+          setConnection(
+            tokens?.accessToken
+              ? { revision, context: props.launchContext }
+              : null,
+          );
         }
       } catch {
         // Missing/unreadable credentials must not expose a cached schedule.
@@ -1203,12 +1217,21 @@ export default function MenuBarShell(props: LaunchProps<{ launchContext?: MenuBa
         if (!disposed && attempt === check) setIsCheckingConnection(false);
       }
     };
-    const unsubscribe = subscribeMenuBarSession(() => { void checkConnection(); });
+    const unsubscribe = subscribeMenuBarSession(() => {
+      void checkConnection();
+    });
     void checkConnection();
-    return () => { disposed = true; unsubscribe(); };
+    return () => {
+      disposed = true;
+      unsubscribe();
+    };
   }, [props.launchContext]);
 
-  if (!connection || connection.context !== props.launchContext || connection.revision !== menuBarSessionRevision()) {
+  if (
+    !connection ||
+    connection.context !== props.launchContext ||
+    connection.revision !== menuBarSessionRevision()
+  ) {
     return <SignedOutMenuBar isLoading={isCheckingConnection} />;
   }
   return <AuthenticatedMenuBar key={connection.revision} {...props} />;

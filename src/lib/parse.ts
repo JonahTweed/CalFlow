@@ -187,7 +187,7 @@ export function parseDetails(
     };
   }
 
-  let m = raw.match(/^(.*?)\s*@\s*(.+)$/);
+  const m = raw.match(/^(.*?)\s*@\s*(.+)$/);
   if (m) {
     const durationText = m[1].trim();
     const place = classifyPlace(m[2].trim());
@@ -382,7 +382,7 @@ function parseNumericDate(
   clock?: Clock,
 ): Date {
   const { day, month } = numericDateParts(first, second, style);
-  let year = yearText ? Number(yearText) : now.getFullYear();
+  const year = yearText ? Number(yearText) : now.getFullYear();
   const hour = clock?.hour ?? 0;
   const minute = clock?.minute ?? 0;
 

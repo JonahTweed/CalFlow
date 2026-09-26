@@ -4,7 +4,7 @@
   "title": "DayCal",
   "description": "A fast Google Calendar schedule, menu bar, quick add, and event management extension for Raycast.",
   "icon": "daycal.png",
-  "author": "JonahTweed",
+  "author": "jonah_tweed",
   "platforms": [
     "macOS"
   ],

@@ -89,10 +89,10 @@ function settingsEqual(
 ): boolean {
   return Boolean(
     a &&
-      a.onlyMeetings === b.onlyMeetings &&
-      a.eventCount === b.eventCount &&
-      a.dateStyle === b.dateStyle &&
-      a.rowLayout === b.rowLayout,
+    a.onlyMeetings === b.onlyMeetings &&
+    a.eventCount === b.eventCount &&
+    a.dateStyle === b.dateStyle &&
+    a.rowLayout === b.rowLayout,
   );
 }
 
@@ -146,7 +146,8 @@ export async function writeMenuBarDisplaySettings(
 
     await LocalStorage.setItem(DISPLAY_SETTINGS_KEY, serialised);
 
-    const verifiedRaw = await LocalStorage.getItem<string>(DISPLAY_SETTINGS_KEY);
+    const verifiedRaw =
+      await LocalStorage.getItem<string>(DISPLAY_SETTINGS_KEY);
     const verified = parseStoredSettings(verifiedRaw);
 
     if (settingsEqual(verified, normalised)) {

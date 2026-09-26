@@ -120,7 +120,10 @@ function keywordMapFromValues(values: KeywordValues): RoutingKeywordMap {
 }
 
 function validatedCalendarIds(value: unknown, label: string): string[] {
-  if (!Array.isArray(value) || !value.every((item) => typeof item === "string")) {
+  if (
+    !Array.isArray(value) ||
+    !value.every((item) => typeof item === "string")
+  ) {
     throw new Error(`${label} calendar selection was not submitted correctly.`);
   }
   return [...value];
@@ -272,7 +275,9 @@ export function CalendarSetupView({ onComplete }: Props) {
         .filter(isWritable)
         .slice()
         .sort((a, b) =>
-          calendarEntryDisplayName(a).localeCompare(calendarEntryDisplayName(b)),
+          calendarEntryDisplayName(a).localeCompare(
+            calendarEntryDisplayName(b),
+          ),
         ),
     [calendars],
   );
@@ -282,7 +287,9 @@ export function CalendarSetupView({ onComplete }: Props) {
       calendars
         .slice()
         .sort((a, b) =>
-          calendarEntryDisplayName(a).localeCompare(calendarEntryDisplayName(b)),
+          calendarEntryDisplayName(a).localeCompare(
+            calendarEntryDisplayName(b),
+          ),
         ),
     [calendars],
   );

@@ -127,4 +127,3 @@ export type GoogleApiList<T> = {
   nextPageToken?: string;
   nextSyncToken?: string;
 };
-

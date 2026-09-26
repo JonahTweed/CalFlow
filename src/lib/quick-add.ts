@@ -36,7 +36,6 @@ const LEGACY_FALLBACKS: Record<CalendarRole, string> = {
   family: CALENDAR_NAMES.family,
 };
 
-
 function confirmationCalendarName(
   calendar: GoogleCalendarEntry,
   roles: Awaited<ReturnType<typeof getCalendarRoles>>,
