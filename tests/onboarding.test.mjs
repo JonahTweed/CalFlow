@@ -11,14 +11,12 @@ const settingsPath = path.join(root, "src", "lib", "calendar-settings.ts");
 const commandPath = path.join(root, "src", "set-up-calendars.tsx");
 const packagePath = path.join(root, "package.json");
 const schedulePath = path.join(root, "src", "schedule.tsx");
-const replayPath = path.join(root, "src", "reset-onboarding.ts");
 
 const setup = fs.readFileSync(setupPath, "utf8");
 const settings = fs.readFileSync(settingsPath, "utf8");
 const command = fs.readFileSync(commandPath, "utf8");
 const pkg = JSON.parse(fs.readFileSync(packagePath, "utf8"));
 const schedule = fs.readFileSync(schedulePath, "utf8");
-const replay = fs.readFileSync(replayPath, "utf8");
 const menuBar = fs.readFileSync(path.join(root, "src", "menu-bar.tsx"), "utf8");
 
 const checks = [];
@@ -28,10 +26,10 @@ function check(name, pass, detail) {
 
 check(
   "Three-step setup flow",
-  setup.includes('Set Up Your Calendars · 1 of 3') &&
-    setup.includes('Set Up Your Calendars · 2 of 3') &&
-    setup.includes('Set Up Your Calendars · 3 of 3'),
-  "Roles, visibility and optional routing are separated into focused steps.",
+  setup.includes('title="1. Choose Calendar Roles"') &&
+    setup.includes('title="2. Choose What You See"') &&
+    setup.includes('title="3. Optional Routing Keywords"'),
+  "Roles, visibility and optional routing are separated into focused steps without root navigation-title overrides.",
 );
 
 check(
@@ -220,23 +218,16 @@ check(
 );
 
 check(
-  "Development setup replay preserves saved choices",
-  replay.includes("getScheduleEnabledCalendarIds") &&
-    replay.includes("getMenuBarEnabledCalendarIds") &&
-    replay.includes("getCalendarRoles") &&
-    replay.includes("getRoutingKeywords") &&
-    replay.includes("setScheduleEnabledCalendarIds") &&
-    replay.includes("setMenuBarEnabledCalendarIds") &&
-    replay.includes("setCalendarRoles") &&
-    replay.includes("setRoutingKeywords"),
-  "Replaying onboarding snapshots and restores the connected account's saved setup instead of wiping it.",
+  "Development setup replay source is removed from the Store bundle",
+  !fs.existsSync(path.join(root, "src", "reset-onboarding.ts")),
+  "The development-only replay helper is not shipped with the Store extension.",
 );
 
 const replayCommand = pkg.commands.find((item) => item.name === "reset-onboarding");
 check(
   "Development setup replay is not exposed as a public command",
   replayCommand === undefined,
-  "The replay helper remains available in source for development testing but is not listed in the Store-facing Raycast manifest.",
+  "The Store-facing Raycast manifest does not expose the removed replay helper.",
 );
 
 // Execute the actual redirect effect with mocked Raycast/storage boundaries.
