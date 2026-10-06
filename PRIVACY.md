@@ -89,7 +89,7 @@ The developer does not receive or routinely have access to your calendar data th
 
 If you choose to submit a GitHub issue, screenshot, screen recording, log, or other diagnostic information, that information is provided voluntarily by you. Please redact private event details, email addresses, private calendar links, OAuth tokens, and other credentials before posting publicly.
 
-Security-sensitive reports should follow [SECURITY.md](SECURITY.md) instead of being posted publicly.
+Security-sensitive reports should be sent privately to [support@daycal.co.uk](mailto:support@daycal.co.uk) instead of being posted publicly.
 
 ## Google API Services User Data Policy
 
@@ -114,7 +114,7 @@ DayCal is open source so its Google API usage and local data handling can be ins
 
 The project aims to use the minimum Google scopes required for its current features, avoids embedding secrets in the repository, distinguishes writable/owned events from guest or read-only events, and runs automated regression and TypeScript checks on changes.
 
-See [SECURITY.md](SECURITY.md) for vulnerability reporting guidance.
+For vulnerability reports, contact [support@daycal.co.uk](mailto:support@daycal.co.uk).
 
 ## Changes to this policy
 
@@ -124,4 +124,4 @@ If DayCal's data handling changes materially, this policy will be updated before
 
 For privacy questions that do not contain sensitive information, email [support@daycal.co.uk](mailto:support@daycal.co.uk), use the DayCal GitHub repository, or contact the maintainer through the GitHub profile.
 
-For suspected vulnerabilities or anything involving credentials or private calendar data, follow the private reporting guidance in [SECURITY.md](SECURITY.md).
+For suspected vulnerabilities or anything involving credentials or private calendar data, contact [support@daycal.co.uk](mailto:support@daycal.co.uk) privately.
