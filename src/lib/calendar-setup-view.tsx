@@ -454,7 +454,7 @@ export function CalendarSetupView({ onComplete }: Props) {
 
   if (isLoading) {
     return (
-      <Form navigationTitle="Set Up Your Calendars" isLoading>
+      <Form isLoading>
         <Form.Description
           title="Loading Google Calendars"
           text="Reading the calendars available to this Google account…"
@@ -466,7 +466,6 @@ export function CalendarSetupView({ onComplete }: Props) {
   if (error) {
     return (
       <Form
-        navigationTitle="Set Up Your Calendars"
         actions={
           <ActionPanel>
             <Action
@@ -493,7 +492,6 @@ export function CalendarSetupView({ onComplete }: Props) {
   if (step === 1) {
     return (
       <Form
-        navigationTitle="Set Up Your Calendars · 1 of 3"
         actions={
           <ActionPanel>
             <Action.SubmitForm
@@ -645,7 +643,6 @@ export function CalendarSetupView({ onComplete }: Props) {
 
     return (
       <Form
-        navigationTitle="Set Up Your Calendars · 2 of 3"
         actions={
           <ActionPanel>
             <Action.SubmitForm
@@ -725,7 +722,6 @@ export function CalendarSetupView({ onComplete }: Props) {
 
   return (
     <Form
-      navigationTitle="Set Up Your Calendars · 3 of 3"
       isLoading={isSaving}
       actions={
         <ActionPanel>
