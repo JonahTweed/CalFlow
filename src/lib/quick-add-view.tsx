@@ -24,7 +24,6 @@ export type QuickAddLaunchProps = LaunchProps<{
 type Props = {
   defaultCalendarRole: CalendarRole;
   defaultCalendarFallbackName: string;
-  commandTitle: string;
   launchProps: QuickAddLaunchProps;
 };
 
@@ -37,7 +36,6 @@ type FormValues = {
 export function QuickAddView({
   defaultCalendarRole,
   defaultCalendarFallbackName,
-  commandTitle,
   launchProps,
 }: Props) {
   const draftValues = launchProps.draftValues;
@@ -110,7 +108,6 @@ export function QuickAddView({
   if (setupComplete === null) {
     return (
       <Detail
-        navigationTitle={commandTitle}
         isLoading
         markdown="Loading DayCal…"
       />
@@ -126,7 +123,6 @@ export function QuickAddView({
   if (!error && !editRequested) {
     return (
       <Detail
-        navigationTitle={commandTitle}
         isLoading={isSubmitting}
         markdown={isSubmitting ? "Adding event…" : "Event added."}
       />
@@ -135,7 +131,6 @@ export function QuickAddView({
 
   return (
     <Form
-      navigationTitle={commandTitle}
       enableDrafts
       isLoading={isSubmitting}
       actions={
