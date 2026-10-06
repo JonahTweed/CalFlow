@@ -8,7 +8,6 @@ function Command(props: QuickAddLaunchProps) {
     <QuickAddView
       defaultCalendarRole="personal"
       defaultCalendarFallbackName={CALENDAR_NAMES.personal}
-      commandTitle="Add Personal Event"
       launchProps={props}
     />
   );
