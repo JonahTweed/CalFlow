@@ -582,6 +582,7 @@ function Command(props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>) {
   const displayOnlyRefresh =
     environment.launchType === LaunchType.Background &&
     props.launchContext?.refreshMode === "display";
+  const fullRefresh = props.launchContext?.refreshMode === "full";
   const initialSnapshot = readMenuBarSnapshot();
   const initialDisplaySettings = normaliseMenuBarDisplaySettings(
     props.launchContext?.displaySettings ?? DEFAULT_MENU_BAR_DISPLAY_SETTINGS,
@@ -592,9 +593,7 @@ function Command(props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>) {
 
   const [isLoading, setIsLoading] = useState(
     preferences.menuBarMode !== "never" &&
-      (displayOnlyRefresh ||
-        environment.launchType === LaunchType.Background ||
-        initialSnapshotIsStale),
+      (displayOnlyRefresh || fullRefresh || initialSnapshotIsStale),
   );
   const [setupComplete, setSetupComplete] = useState<boolean | null>(
     initialSnapshot?.setupComplete ?? null,
@@ -727,16 +726,18 @@ function Command(props: LaunchProps<{ launchContext?: MenuBarLaunchContext }>) {
       return;
     }
 
-    // Raycast loads a menu-bar command every time its item is clicked. Do not
-    // hit Google Calendar on every click: background refresh keeps this cache
-    // warm. Fetch only for full background launches or when the cache is stale.
-    if (environment.launchType === LaunchType.Background || !cacheIsFresh) {
+    // The one-minute background launch keeps countdowns and status text moving,
+    // but it should not call Google while the warm cache is still fresh. Fetch
+    // only when another command explicitly requests a full refresh or the cache
+    // has passed the three-minute freshness window.
+    if (fullRefresh || !cacheIsFresh) {
       void reload();
     } else {
       setIsLoading(false);
     }
   }, [
     displayOnlyRefresh,
+    fullRefresh,
     preferences.menuBarMode,
     reload,
     syncMenuBarRuntimeSettings,
