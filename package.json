@@ -1,7 +1,7 @@
 {
   "$schema": "https://www.raycast.com/schemas/extension.json",
-  "name": "calendar-shortcuts-google",
-  "title": "DayCal",
+  "name": "daycal-google-calendar",
+  "title": "DayCal - Google Calendar",
   "description": "A fast Google Calendar schedule, menu bar, quick add, and event management extension for Raycast.",
   "icon": "daycal.png",
   "author": "jonah_tweed",

@@ -4,9 +4,9 @@ import { join } from "node:path";
 import test from "node:test";
 
 const manifest = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8"));
-test("DayCal display branding preserves the installed extension identity", () => {
-  assert.equal(manifest.title, "DayCal");
-  assert.equal(manifest.name, "calendar-shortcuts-google");
+test("DayCal Store branding uses a descriptive extension identity", () => {
+  assert.equal(manifest.title, "DayCal - Google Calendar");
+  assert.equal(manifest.name, "daycal-google-calendar");
   assert.equal(manifest.icon, "daycal.png");
   assert.ok(existsSync(new URL(`../assets/${manifest.icon}`, import.meta.url)));
   assert.ok(existsSync(new URL("../assets/daycal@dark.png", import.meta.url)));

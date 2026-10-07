@@ -14,6 +14,7 @@ function harness() {
   let pendingSchedule;
   let scheduleCalls = 0;
   let deleteSettingsCalls = 0;
+  let launchError = null;
   const settings = { onlyMeetings: false, eventCount: 10, dateStyle: "day-month", rowLayout: "title-first" };
   const ui = new Proxy({}, { get: (_, key) => key });
   const api = {
@@ -30,7 +31,7 @@ function harness() {
     Alert: { ActionStyle: ui }, Toast: { Style: ui },
     LaunchType: { Background: "background", UserInitiated: "user" }, environment: { launchType: "background" },
     getPreferenceValues: () => ({ menuBarMode: "always", calendarSelectionMode: "all" }),
-    launchCommand: async (options) => { trace.push("invalidate"); launches.push(options); },
+    launchCommand: async (options) => { trace.push("invalidate"); launches.push(options); if (launchError) throw launchError; },
     confirmAlert: async () => confirmed,
     showHUD: async () => {}, showToast: async () => {},
   };
@@ -90,6 +91,7 @@ function harness() {
     setTokens: (value) => { tokens = value; }, setConfirmed: (value) => { confirmed = value; },
     setSchedule: (value) => { pendingSchedule = value; }, scheduleCalls: () => scheduleCalls,
     deleteSettingsCalls: () => deleteSettingsCalls,
+    setLaunchError: (value) => { launchError = value; },
   };
 }
 
@@ -134,6 +136,14 @@ test("Keep Settings disconnect removes OAuth tokens and stale menu data without 
   assert.equal(t.stores.get("calendar-shortcuts-menu-bar").size, 0);
   assert.equal(t.launches.at(-1).name, "menu-bar");
   assert.equal(t.launches.at(-1).type, "background");
+});
+
+test("Disconnect succeeds when the Calendar Menu Bar command is disabled", async () => {
+  const t = harness();
+  t.setLaunchError(new Error("Calendar Menu Bar is disabled"));
+  assert.equal(await t.disconnectGoogle("keep"), true);
+  assert.deepEqual(t.trace.slice(0, 2), ["remove-tokens", "invalidate"]);
+  assert.equal(t.launches.at(-1).name, "menu-bar");
 });
 
 test("Delete Settings removes account setup before OAuth tokens and clears stale menu data", async () => {

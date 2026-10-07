@@ -8,7 +8,6 @@ function Command(props: QuickAddLaunchProps) {
     <QuickAddView
       defaultCalendarRole="shared"
       defaultCalendarFallbackName={CALENDAR_NAMES.shared}
-      commandTitle="Add Shared Event"
       launchProps={props}
     />
   );

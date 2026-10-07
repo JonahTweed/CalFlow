@@ -19,7 +19,6 @@ function Command() {
 
   return (
     <Detail
-      navigationTitle="Set Up Your Calendars"
       markdown={
         "## ✅ DayCal is ready\n\nYour calendar roles, Schedule calendars, Menu Bar calendars and optional routing keywords have been saved for this Google account."
       }

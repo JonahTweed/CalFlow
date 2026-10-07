@@ -362,7 +362,6 @@ function Command() {
   if (error) {
     return (
       <Form
-        navigationTitle="Calendar Settings"
         actions={
           <ActionPanel>
             <Action
@@ -383,7 +382,6 @@ function Command() {
 
   return (
     <Form
-      navigationTitle="Calendar Settings"
       isLoading={isLoading || isSaving}
       actions={
         <ActionPanel>

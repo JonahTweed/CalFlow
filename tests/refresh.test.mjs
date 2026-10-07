@@ -132,11 +132,12 @@ const checks = [
     detail: "Display-only settings avoid Google while calendar-scope changes do a full refresh.",
   },
   {
-    label: "Background Menu Bar launch → reload",
+    label: "Menu Bar respects cache freshness",
     pass:
-      menuBar.includes("environment.launchType === LaunchType.Background || !cacheIsFresh") &&
+      menuBar.includes("if (fullRefresh || !cacheIsFresh)") &&
+      !menuBar.includes("environment.launchType === LaunchType.Background || !cacheIsFresh") &&
       menuBar.includes("void reload()"),
-    detail: "Background refresh requests actually rebuild the cached event snapshot.",
+    detail: "Minute background launches re-render from cache unless a full refresh is requested or the cache is stale.",
   },
   {
     label: "Worker Unloaded ordering preserved",

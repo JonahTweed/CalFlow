@@ -7,7 +7,14 @@ import {
   showToast,
   useNavigation,
 } from "@raycast/api";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  CalendarRole,
+  CalendarRoleMap,
+  calendarEntryDisplayName,
+  getCalendarRoles,
+  roleLabel,
+} from "./lib/calendar-settings";
 import { updateEvent } from "./lib/google";
 import { GoogleCalendarEntry, GoogleEvent } from "./lib/types";
 
@@ -25,20 +32,23 @@ type Values = {
   description: string;
 };
 
-function calendarDisplayName(calendar: GoogleCalendarEntry): string {
-  const displayName =
-    calendar.summaryOverride?.trim() || calendar.summary?.trim() || "";
-
-  if (
-    calendar.primary &&
-    (!displayName ||
-      displayName === calendar.id ||
-      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(displayName))
-  ) {
-    return "Personal (Primary)";
+function calendarDisplayName(
+  calendar: GoogleCalendarEntry,
+  roles: CalendarRoleMap,
+): string {
+  if (!calendar.primary) {
+    return calendarEntryDisplayName(calendar);
   }
 
-  return displayName || "Calendar";
+  const mappedRole = (
+    ["personal", "work", "shared", "family"] as CalendarRole[]
+  ).find((role) => roles[role] === calendar.id);
+
+  if (mappedRole) {
+    return `${roleLabel(mappedRole)} (Primary)`;
+  }
+
+  return "Primary Calendar";
 }
 
 function parseDateOnly(value: string | undefined): Date | null {
@@ -89,6 +99,26 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
   const [title, setTitle] = useState(event.summary || "");
   const [location, setLocation] = useState(event.location || "");
   const [description, setDescription] = useState(event.description || "");
+  const [calendarRoles, setCalendarRoles] = useState<CalendarRoleMap>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void getCalendarRoles()
+      .then((roles) => {
+        if (!cancelled) {
+          setCalendarRoles(roles);
+        }
+      })
+      .catch(() => {
+        // Fall back to the neutral Primary Calendar label if saved role
+        // settings cannot be loaded.
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const allDay = Boolean(event.start.date && !event.start.dateTime);
 
@@ -142,6 +172,7 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
   async function submit(values: Values) {
     if (savingRef.current) return;
     savingRef.current = true;
+
     try {
       const title = values.title.trim();
       const location = values.location.trim();
@@ -182,6 +213,7 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         const exclusiveEndDate = formatDateOnly(addCalendarDays(values.end, 1));
 
         setSaving(true);
+
         await updateEvent(calendar.id, event.id, {
           summary: title,
           start: { date: startDate },
@@ -199,6 +231,7 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
         }
 
         setSaving(true);
+
         await updateEvent(calendar.id, event.id, {
           summary: title,
           start: { dateTime: values.start.toISOString() },
@@ -209,7 +242,10 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
       }
 
       await onSaved();
-      await showToast({ style: Toast.Style.Success, title: "Event updated" });
+      await showToast({
+        style: Toast.Style.Success,
+        title: "Event updated",
+      });
       pop();
     } catch (error) {
       await showToast({
@@ -226,7 +262,7 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
   return (
     <Form
       isLoading={saving}
-      navigationTitle={`Edit · ${calendarDisplayName(calendar)}`}
+      navigationTitle={`Edit · ${calendarDisplayName(calendar, calendarRoles)}`}
       actions={
         <ActionPanel>
           {/* Keep Save independent of the host's form-value collection. Some
@@ -236,7 +272,13 @@ export default function EditEvent({ calendar, event, onSaved }: Props) {
             icon={Icon.Checkmark}
             shortcut={{ modifiers: ["cmd"], key: "return" }}
             onAction={() =>
-              submit({ title, start, end, location, description })
+              submit({
+                title,
+                start,
+                end,
+                location,
+                description,
+              })
             }
           />
           {event.htmlLink ? (

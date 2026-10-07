@@ -19,9 +19,16 @@ export async function invalidateMenuBarSession(): Promise<void> {
   eventCache.clear();
   // A separate command's React state is not cleared by Cache.clear(). Launch a
   // new unauthenticated render immediately, including when already signed out.
-  await launchCommand({
-    name: "menu-bar",
-    type: LaunchType.Background,
-    context: { refreshMode: "full", sessionRevision: menuBarSessionRevision() },
-  });
+  try {
+    await launchCommand({
+      name: "menu-bar",
+      type: LaunchType.Background,
+      context: {
+        refreshMode: "full",
+        sessionRevision: menuBarSessionRevision(),
+      },
+    });
+  } catch {
+    // Menu bar disabled: the cleared cache is enough.
+  }
 }
